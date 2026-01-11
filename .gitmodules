@@ -1,0 +1,6 @@
+[submodule "interact_box_libs"]
+	path = interact_box_libs
+	url = https://github.com/Vex-jolty/interact_box_libs
+[submodule "interact_box_extras"]
+	path = interact_box_extras
+	url = https://github.com/Vex-jolty/interact_box_extras

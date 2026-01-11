@@ -1,0 +1,42 @@
+{
+  "host": "0.0.0.0",
+  "port": 80,
+  "wallpaperDir": "wallpapers",
+  "malwareDir": "malware",
+  @BOOT_KEYS@
+  "musicExtensions": [".midi", ".mid"],
+  "openableExtensions": [
+    ".exe",
+    ".txt",
+    ".html",
+    ".jpg",
+    ".png",
+    ".gif",
+    ".wav",
+    ".mp3",
+    ".mp4",
+    ".scr",
+    ".com",
+    ".htm"
+  ],
+  "useWallpapers": true,
+  @BOOT_BOOL_KEYS@
+  "useMusic": true,
+  "useMalware": true,
+  "useWinamp": true,
+  "useSysSounds": true,
+  "useTerminal": true,
+  "useMessageBox": true,
+  "useOpenRandom": true,
+  "useDeleteRandom": true,
+  "useDeleteSystem": true,
+  "useReboot": true,
+  "useCrash": true,
+  "useMacroResolution": false,
+  "useMicroResolution": true,
+  "useColors": true,
+  "useThemes": true,
+  @XP_BOOL_KEYS@
+  "warnAboutUrlsInTerminal": true,
+  "loggingLevel": 0
+}

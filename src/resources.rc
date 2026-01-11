@@ -1,0 +1,16 @@
+#ifndef _INC_SDKDDKVER
+  #include <sdkddkver.h>
+#endif
+
+#include "resources.h"
+#if WINVER < _WIN32_WINNT_WINXP
+  IDI_ICON1 ICON "../icon/win98.ico"
+  IDI_LOGO IMAGE "../icon/win98.bmp"
+#elif WINVER == _WIN32_WINNT_WINXP
+  IDI_ICON1 ICON "../icon/winxp.ico"
+  IDI_LOGO IMAGE "../icon/winxp.bmp"
+#else
+  IDI_ICON1 ICON "../icon/vista.ico"
+  IDI_LOGO IMAGE "../icon/vista.bmp"
+  1 24 "app.manifest"
+#endif

@@ -1,0 +1,248 @@
+; -----------------------------------------
+; Interact Box Installer Template
+; Generated via CMake configure_file()
+; -----------------------------------------
+
+Unicode true
+!include "MUI2.nsh"
+!include "LogicLib.nsh"
+!include "nsProcess.nsh"
+!ifndef IS_WIN98_BUILD
+  !include "WinMessages.nsh"
+!endif
+
+Var StartUpCheckbox
+Var UserWantsStartup
+
+; --------------------------
+; Configurable defines
+; --------------------------
+!define PRODUCT_NAME "@PRODUCT_FLAVOR@"
+!define VERSION "@CMAKE_PROJECT_VERSION@.0"
+!define _VERSION "@CMAKE_PROJECT_VERSION@.0"
+!define MUI_ICON "@INSTALLER_ICON@"
+!ifdef IS_WINXP_BUILD
+  !define MUI_HEADERIMAGE
+  !define MUI_HEADERIMAGE_BITMAP "@HEADER_IMAGE@"
+  !define MUI_HEADERIMAGE_RIGHT
+!endif
+
+OutFile "setup.exe"
+
+VIProductVersion "${VERSION}"
+VIAddVersionKey /LANG=1033 "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey /LANG=1033 "FileDescription" "${PRODUCT_NAME} Installer"
+VIAddVersionKey /LANG=1033 "FileVersion" "${VERSION}"
+VIAddVersionKey /LANG=1033 "ProductVersion" "${VERSION}"
+VIAddVersionKey /LANG=1033 "CompanyName" "Vex the Jolteon"
+VIAddVersionKey /LANG=1033 "LegalCopyright" ""
+VIAddVersionKey /LANG=1033 "LegalTrademarks" ""
+VIAddVersionKey /LANG=1033 "OriginalFilename" "setup.exe"
+VIAddVersionKey /LANG=1033 "Comments" "Installer for ${PRODUCT_NAME}"
+
+; --------------------------
+; Installer UI
+; --------------------------
+InstallDir "$PROGRAMFILES\Interact Box"
+Name "${PRODUCT_NAME}"
+
+InstallDirRegKey HKCU "Software\Interact Box" "Install_Dir"
+
+!define MUI_PAGE_HEADER_TEXT "${PRODUCT_NAME} Version ${VERSION} Setup"
+!define MUI_ABORTWARNING
+
+!insertmacro MUI_PAGE_LICENSE "LICENSE.rtf"
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+Page custom StartupPage StartupPageLeave
+
+!define MUI_FINISHPAGE_RUN "$INSTDIR\interact_box.exe"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.rtf"
+!define MUI_FINISHPAGE_TEXT "Installation complete! Thank you for installing ${PRODUCT_NAME}. \
+You can support me on Ko-Fi at https://ko-fi.com/vexjolteon. \
+Would you like to open ${PRODUCT_NAME} and the README file?"
+
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!insertmacro MUI_LANGUAGE "English"
+
+; --------------------------
+; Helper macros
+; --------------------------
+!macro killApp app
+    push ${app}
+    call killApp
+!macroend
+
+!macro un.killApp app
+    push ${app}
+    call un.killApp
+!macroend
+
+; --------------------------
+; Sections
+; --------------------------
+Section "Install"
+    !insertmacro killApp interact_box.exe
+    !insertmacro killApp message_box_process.exe
+    !insertmacro killApp interact_box_settings.exe
+    !insertmacro killApp trivia_game.exe
+    !insertmacro killApp malware_date_settings.exe
+
+    Sleep 500
+
+    SetOutPath "$INSTDIR"
+    File "..\interact_box.exe"
+    File ".\README.rtf"
+    File "..\interact_box_extras\src\message_box_process\message_box_process.exe"
+    File "..\interact_box_extras\src\trivia_game\trivia_game.exe"
+    !ifdef IS_WIN98_BUILD
+      File "..\..\pre_compiled\system_message_process\system_box.exe"
+      File "..\..\pre_compiled\system_message_process\VBRUN300.DLL"
+    !else
+      File "..\interact_box_extras\src\tts_process\tts_process.exe"
+    !endif
+    File "..\interact_box_extras\src\interact_box_settings\interact_box_settings.exe"
+    File "..\interact_box_extras\src\malware_date_settings\malware_date_settings.exe"
+
+    SetOutPath "$INSTDIR\audio"
+    File "..\..\interact_box_extras\src\trivia_game\audio\skill_check.wav"
+
+    SetOutPath "$WINDIR"
+    File ".\interact_box_config.json"
+    File ".\malware_with_date_specific_deployment.json"
+
+
+    CreateDirectory "$INSTDIR\images"
+    CreateDirectory "$INSTDIR\malware"
+
+    SetOutPath "$INSTDIR\sounds\kde_pack"
+    File "..\..\sounds\kde_pack\*.*"
+    
+    SetOutPath "$INSTDIR\sounds\default_pack"
+    File "..\..\sounds\default_pack\*.*"
+
+    SetOutPath "$INSTDIR\sounds\95_pack"
+    File "..\..\sounds\95_pack\*.*"
+
+    SetOutPath "$INSTDIR\sounds\7_pack"
+    File "..\..\sounds\7_pack\*.*"
+
+    SetOutPath "$INSTDIR\sounds\2000_pack"
+    File "..\..\sounds\2000_pack\*.*"
+
+    WriteRegStr HKCU "Software\Interact Box" "Install_Dir" "$INSTDIR"
+
+    CreateDirectory "$SMPROGRAMS\Interact Box"
+    CreateShortcut "$SMPROGRAMS\Interact Box\Launch Interact Box.lnk" "$INSTDIR\interact_box.exe"
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
+    CreateShortcut "$SMPROGRAMS\Interact Box\Uninstall Interact Box.lnk" "$INSTDIR\Uninstall.exe"
+
+    ${If} $UserWantsStartup == ${BST_CHECKED}
+      WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox" "$INSTDIR\interact_box.exe"
+      !ifdef IS_VISTA_BUILD
+        ExecWait '"schtasks" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
+      !endif
+    ${Endif}
+SectionEnd
+
+Section "Uninstall"
+    !insertmacro un.killApp interact_box.exe
+    !insertmacro un.killApp message_box_process.exe
+    !insertmacro un.killApp interact_box_settings.exe
+    !insertmacro un.killApp trivia_game.exe
+    !insertmacro un.killApp malware_date_settings.exe
+
+    Sleep 500
+    
+    Delete "$WINDIR\interact_box_config.json"
+    Delete "$WINDIR\malware_with_date_specific_deployment.json"
+    Delete "$INSTDIR\message_box\*.*"
+    Delete "$INSTDIR\images\*.*"
+    Delete "$INSTDIR\sounds\kde_pack\*.*"
+    Delete "$INSTDIR\sounds\default_pack\*.*"
+    Delete "$INSTDIR\sounds\95_pack\*.*"
+    Delete "$INSTDIR\sounds\7_pack\*.*"
+    Delete "$INSTDIR\sounds\2000_pack\*.*"
+    Delete "$INSTDIR\winamp\*.*"
+    Delete "$INSTDIR\malware\*.*"
+    Delete "$INSTDIR\midis\*.*"
+    Delete "$INSTDIR\trivia\*.*"
+    Delete "$INSTDIR\*.*"
+    Delete "$SMPROGRAMS\Interact Box\Launch Interact Box.lnk"
+    Delete "$SMPROGRAMS\Interact Box\Uninstall Interact Box.lnk"
+    RMDir "$SMPROGRAMS\Interact Box"
+    RMDir "$INSTDIR\message_box"
+    RMDir "$INSTDIR\images"
+    RMDir "$INSTDIR\sounds\kde_pack"
+    RMDir "$INSTDIR\sounds\default_pack"
+    RMDir "$INSTDIR\sounds\95_pack"
+    RMDir "$INSTDIR\sounds\7_pack"
+    RMDir "$INSTDIR\sounds\2000_pack"
+    RMDir "$INSTDIR\sounds"
+    RMDir "$INSTDIR\malware"
+    RMDir "$INSTDIR\winamp"
+    RMDir "$INSTDIR\midis"
+    RMDir "$INSTDIR\trivia"
+    RMDir "$INSTDIR"
+    ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Run" ""
+    DeleteRegKey HKCU "Software\Interact Box"
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox"
+SectionEnd
+
+; --------------------------
+; Custom Pages & Functions
+; --------------------------
+Function StartupPage
+    nsDialogs::Create 1018
+    Pop $0
+    ${If} $0 == error
+        Abort
+    ${EndIf}
+    ${NSD_CreateCheckbox} 20u 10u 100% 12u "Run Interact Box on logon"
+    Pop $StartUpCheckbox
+    ${NSD_SetState} $StartUpCheckbox ${BST_CHECKED}
+
+    nsDialogs::Show
+FunctionEnd
+
+Function StartupPageLeave
+    ${NSD_GetState} $StartUpCheckbox $UserWantsStartup
+FunctionEnd
+
+Function killApp
+    exch $1
+    nsProcess::_FindProcess "$1"
+    Pop $R0
+    ${If} $R0 == 0
+        nsProcess::_KillProcess "$1"
+        Pop $R0
+    ${EndIf}
+FunctionEnd
+
+Function un.killApp
+    exch $1
+    nsProcess::_FindProcess "$1"
+    Pop $R0
+    ${If} $R0 == 0
+        nsProcess::_KillProcess "$1"
+        Pop $R0
+    ${EndIf}
+FunctionEnd
+
+Function .onInit    
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+    "This software gives people online control over a considerable portion of the operating system. \
+    IF YOU DO NOT INTEND FOR THAT, OR IF YOU'RE NOT RUNNING THIS ON A VIRTUALIZED ENVIRONMENT, \
+    IT IS HIGHLY RECOMMENDED TO ABORT THE INSTALLATION IMMEDIATELY.\
+    Click OK to continue, or Cancel to stop the installation." \
+    IDOK true IDCANCEL false
+    true:
+        Goto done
+    false:
+        Abort
+    done:
+FunctionEnd

@@ -1,0 +1,10 @@
+build*/
+.vscode/
+banned_words.txt
+*.png
+*.bmp
+questions.json
+audio/
+sounds/
+pre_compiled/
+malware_with_date_specific_deployment.json
