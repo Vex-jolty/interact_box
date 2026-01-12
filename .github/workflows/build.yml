@@ -52,7 +52,6 @@ jobs:
             -w /src \
             ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
             cmake --build build-${{ matrix.target }} \
-              -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} \
               --parallel
 
       - name: Upload artifacts
