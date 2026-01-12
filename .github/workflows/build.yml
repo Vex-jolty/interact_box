@@ -10,10 +10,15 @@ jobs:
 
     strategy:
       matrix:
-        target:
-          - win98
-          - winxp
-          - vista
+        include:
+        - target: win98
+          toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+
+        - target: winxp
+          toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+
+        - target: vista
+          toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
 
     steps:
       - name: Log in to Docker Hub
@@ -33,6 +38,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
             cmake -B build-${{ matrix.target }} \
                   -S . \
+                  -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} \
                   -DTARGET_WINDOWS_VERSION=${{ matrix.target }} \
                   -DCMAKE_BUILD_TYPE=Release
 
@@ -42,7 +48,9 @@ jobs:
             -v ${{ github.workspace }}:/src \
             -w /src \
             ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
-            cmake --build build-${{ matrix.target }} --parallel
+            cmake --build build-${{ matrix.target }} \
+              -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} \
+              --parallel
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
