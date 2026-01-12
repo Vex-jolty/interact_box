@@ -170,15 +170,28 @@ configure_file(
   @ONLY
 )
 
-add_custom_command(
-  TARGET interact_box
+add_custom_command(TARGET interact_box
   POST_BUILD
   COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/README.md -o ${CMAKE_BINARY_DIR}/installer/README.rtf
   COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/LICENSE.md -o ${CMAKE_BINARY_DIR}/installer/LICENSE.rtf
-  COMMAND makensis 
-  ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
-	COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+  COMMENT "Generating license and readme"  
 )
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/pre_compiled/system_message_process/system_box.exe AND NSIS_ARG STREQUAL "IS_WIN98_BUILD")
+    add_custom_command(TARGET interact_box
+    POST_BUILD
+    COMMAND makensis 
+    ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+    COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+  )
+else()
+  add_custom_command(TARGET interact_box
+    POST_BUILD
+    COMMAND makensis 
+    ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+    COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+  )
+endif()
 
 if (CREATE_ISO)
   string(REPLACE " " "_" ISO_NAME ${PRODUCT_FLAVOR})

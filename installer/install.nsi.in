@@ -100,8 +100,10 @@ Section "Install"
     File "..\interact_box_extras\src\message_box_process\message_box_process.exe"
     File "..\interact_box_extras\src\trivia_game\trivia_game.exe"
     !ifdef IS_WIN98_BUILD
-      File "..\..\pre_compiled\system_message_process\system_box.exe"
-      File "..\..\pre_compiled\system_message_process\VBRUN300.DLL"
+      !ifdef USE_PRE_COMPILED_EXES
+        File "..\..\pre_compiled\system_message_process\system_box.exe"
+        File "..\..\pre_compiled\system_message_process\VBRUN300.DLL"
+      !endif
     !else
       File "..\interact_box_extras\src\tts_process\tts_process.exe"
     !endif
