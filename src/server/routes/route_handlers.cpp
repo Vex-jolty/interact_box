@@ -405,6 +405,10 @@ namespace Server::Routes {
 		},
 		nullopt
 			#else
+			if (!FileHelper::checkIfFileExists(_fileUtil->workingDirectory + "\\system_box.exe")) {
+				res->setResponse(nullopt, "{\"error\": \"Missing system box executable\"}", HttpStatus::FailedDependency);
+				return;
+			}
 			string text = JsonHelper::getJsonStringValue(req->body, "text");
 			if (text.size() > 126) {
 				Utils::MessageBoxUtil::createBox(
