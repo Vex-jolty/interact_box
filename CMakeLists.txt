@@ -109,6 +109,7 @@ target_sources(interact_box PRIVATE ${OUT_RC})
 
 target_compile_options(interact_box PRIVATE
 	$<$<CONFIG:Debug>:-g -gdwarf-4 -O0 -fno-omit-frame-pointer>
+  -fpermissive
 )
 
 target_link_options(interact_box PRIVATE

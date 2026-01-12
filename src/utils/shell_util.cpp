@@ -6,7 +6,7 @@ namespace Utils {
 		LPCSTR lpDir = directory.has_value() ? directory.value().c_str() : NULL;
 		LPCSTR lpParams = parameters.has_value() ? parameters.value().c_str() : NULL;
 		HINSTANCE instance = ShellExecuteA(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
-		if ((int)instance <= 32) {
+		if ((int)instance <= SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotCallFromShell, toOpen);
 		}
 		return instance;
@@ -16,7 +16,7 @@ namespace Utils {
 		LPCWSTR lpDir = directory.has_value() ? directory.value().c_str() : NULL;
 		LPCWSTR lpParams = parameters.has_value() ? parameters.value().c_str() : NULL;
 		HINSTANCE instance = ShellExecuteW(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
-		if ((int)instance <= 32) {
+		if ((int)instance <= SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotCallFromShell, StringHelper::wideStringToString(toOpen));
 		}
 		return instance;
