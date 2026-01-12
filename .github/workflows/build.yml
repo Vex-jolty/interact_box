@@ -1,0 +1,51 @@
+name: Build Interact Box
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target:
+          - win98
+          - winxp
+          - vista
+
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/src \
+            -w /src \
+            ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
+            cmake -B build-${{ matrix.target }} \
+                  -S . \
+                  -DTARGET_WINDOWS_VERSION=${{ matrix.target }} \
+                  -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/src \
+            -w /src \
+            ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
+            cmake --build build-${{ matrix.target }} --parallel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: interactbox-${{ matrix.target }}
+          path: build-${{ matrix.target }}/installer/*.exe
