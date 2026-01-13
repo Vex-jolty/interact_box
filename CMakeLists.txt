@@ -181,9 +181,7 @@ set(XP_BOOL_KEYS "")
 if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
 	set(BOOT_KEYS "\"bootImagesDir\": \"boot_images\",\n	\"shutdownImagesDir\": \"shutdown_images\",")
 	set(BOOT_BOOL_KEYS "\"useBootAndShutdownImages\": true,\n	\"useSystemBox\": true,")
-endif()
-
-if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IBXP)
+else()
 	set(XP_BOOL_KEYS "\"useTts\": true,")
 endif()
 
