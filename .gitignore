@@ -4,6 +4,8 @@ banned_words.txt
 *.png
 questions.json
 audio/
-sounds/
+sounds/*
+!sounds/default_pack/
+!sounds/default_pack/**
 pre_compiled/
 malware_with_date_specific_deployment.json

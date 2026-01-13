@@ -33,9 +33,11 @@ namespace Server::Routes {
 	void* runThemeThread(void* arg);
 	#if WINVER > _WIN32_WINNT_NT4
 	void setSoundsFromJson(Json::Value jsonData, std::wstring packDir, std::vector<std::wstring> keys);
+	void setDefaultSounds(std::vector<std::wstring> keys);
 	void processBoxRequest(std::wstring processName, Json::Value jsonRequest, std::shared_ptr<Utils::FileUtil> fileUtil);
 	#else
-	void setSoundsFromJson(Json::Value jsonData, std::string packDir, std::vector<std::string> keys, std::string windowsDir);
+	void setSoundsFromJson(Json::Value jsonData, std::string packDir, std::vector<std::string> keys);
+	void setDefaultSounds(std::vector<std::string> keys);
 	void processBoxRequest(std::string processName, Json::Value jsonRequest, std::shared_ptr<Utils::FileUtil> fileUtil);
 	#endif
 	void processWallpaperCommand(std::shared_ptr<Utils::FileUtil> fileUtil);

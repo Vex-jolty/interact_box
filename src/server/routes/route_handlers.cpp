@@ -53,6 +53,12 @@ namespace Server::Routes {
 		auto packDir = IndexHelper::getRandomItem(packDirs);
 		auto files = FileHelper::filterFiles(fileUtil->files, packDir);
 #if WINVER > _WIN32_WINNT_NT4
+		if (packDir.ends_with(L"default")) {
+			setDefaultSounds(keys);
+			wstring pack = StringHelper::removeSuffix(StringHelper::removePrefix(packDir, fileUtil->workingDirectory + L"\\sounds\\"), L"_pack");
+			fileUtil->setSoundPack(pack);
+			return pack;
+		}
 		wstring jsonFile;
 		for (auto& file : files) {
 			if (!file.ends_with(L".json")) {
@@ -61,6 +67,12 @@ namespace Server::Routes {
 			jsonFile = file;
 		}
 #else
+		if (packDir.ends_with("default")) {
+			setDefaultSounds(keys);
+			string pack = StringHelper::removeSuffix(StringHelper::removePrefix(packDir, fileUtil->workingDirectory + "\\sounds\\"), "_pack");
+			fileUtil->setSoundPack(pack);
+			return pack;
+		}
 		string jsonFile;
 		for (auto& file : files) {
 			if (!file.ends_with(".json")) {
@@ -81,7 +93,7 @@ namespace Server::Routes {
 		setSoundsFromJson(jsonData, packDir, keys);
 		wstring pack = StringHelper::removeSuffix(StringHelper::removePrefix(packDir, fileUtil->workingDirectory + L"\\sounds\\"), L"_pack");
 #else
-		setSoundsFromJson(jsonData, packDir, keys, fileUtil->windowsDir);
+		setSoundsFromJson(jsonData, packDir, keys);
 		string pack = StringHelper::removeSuffix(StringHelper::removePrefix(packDir, fileUtil->workingDirectory + "\\sounds\\"), "_pack");
 #endif
 		fileUtil->setSoundPack(pack);
@@ -128,13 +140,13 @@ namespace Server::Routes {
 		return _routes;
 	}
 
-	#if WINVER == _WIN32_WINNT_NT4
+#if WINVER == _WIN32_WINNT_NT4
 	string setBootScreen(shared_ptr<Utils::FileUtil> fileUtil, bool isShutdownScreen = false) {
 		string path = fileUtil->selectRandomFile(isShutdownScreen ? "shutdown" : "boot");
 		FileHelper::copyFile(path, isShutdownScreen ? "C:\\WINDOWS\\LOGOW.SYS" : "C:\\LOGO.SYS");
 		return path;
 	}
-	#endif
+#endif
 
 	void RouteHandler::_setupRoutes() {
 		_routes = { Http::HttpRoute(
@@ -423,7 +435,7 @@ namespace Server::Routes {
 			res->setResponse(nullopt, "ok", 200);
 		},
 		_configUtil.getUseSystemBox()
-			#endif
+#endif
 	), Http::HttpRoute(
 		"/killInteractBox",
 		"GET",

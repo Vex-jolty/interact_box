@@ -9,20 +9,40 @@ namespace Server::Routes {
 			Json::Value jsonValue = jsonData[StringHelper::wideStringToString(key)];
 			wstring value = StringHelper::stringToWideString(jsonValue.asString());
 			wstring subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
-			wstring file = (packDir.ends_with(L"default_pack") ? L"C:\\WINDOWS\\MEDIA" : packDir) + L"\\" + value;
+			wstring file = (packDir.ends_with(L"default_pack") ? windowsDir : packDir) + L"\\" + value;
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, file);
 			if (!success) throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + L" as " + value);
 		}
 	}
 
+	void setDefaultSounds(vector<wstring> keys) {
+		for (auto& key : keys) {
+			string defaultValKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key;
+			string value = Utils::RegistryUtil::getKeyValue(HKEY_CURRENT_USER, defaultValKey, L"\\.Default");
+			string subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
+			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, value);
+			if (!success) throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
+		}
+	}
+
 	#else
-	void setSoundsFromJson(Json::Value jsonData, string packDir, vector<string> keys, string windowsDir) {
+	void setSoundsFromJson(Json::Value jsonData, string packDir, vector<string> keys) {
 		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[key];
 			string value = jsonValue.asString();
 			string subKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key + "\\.Current";
-			string file = (packDir.ends_with("default_pack") ? windowsDir + "\\MEDIA" : packDir) + "\\" + value;
+			string file = packDir + "\\" + value;
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, file);
+			if (!success) throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
+		}
+	}
+
+	void setDefaultSounds(vector<string> keys) {
+		for (auto& key : keys) {
+			string defaultValKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key;
+			string value = Utils::RegistryUtil::getKeyValue(HKEY_CURRENT_USER, defaultValKey, "\\.Default");
+			string subKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key + "\\.Current";
+			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, value);
 			if (!success) throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
 		}
 	}

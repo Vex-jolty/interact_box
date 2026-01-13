@@ -36,40 +36,40 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/interact_box_libs)
 add_subdirectory(${CMAKE_SOURCE_DIR}/interact_box_extras)
 
 add_executable(
-  interact_box src/main.cpp
-  src/server/web_server.cpp
-  src/server/http/http_response.cpp
-  src/server/http/http_request.cpp
-  src/server/http/http_route.cpp
-  src/server/routes/route_handlers.cpp
-  src/server/routes/route_handler_auxiliaries.cpp
-  src/utils/crash_util.cpp
-  src/utils/message_box_util.cpp
-  src/utils/file_util.cpp
-  src/utils/registry_util.cpp
-  src/utils/time_util.cpp
-  src/utils/reboot_util.cpp
-  src/utils/logging_util.cpp
-  src/utils/cmd_util.cpp
-  src/utils/resolution_util.cpp
-  src/utils/shell_util.cpp
-  src/utils/config_util.cpp
-  src/errors/error_handler.cpp
-  include/http_status_codes.h
-  src/threads/tray_thread.cpp
+	interact_box src/main.cpp
+	src/server/web_server.cpp
+	src/server/http/http_response.cpp
+	src/server/http/http_request.cpp
+	src/server/http/http_route.cpp
+	src/server/routes/route_handlers.cpp
+	src/server/routes/route_handler_auxiliaries.cpp
+	src/utils/crash_util.cpp
+	src/utils/message_box_util.cpp
+	src/utils/file_util.cpp
+	src/utils/registry_util.cpp
+	src/utils/time_util.cpp
+	src/utils/reboot_util.cpp
+	src/utils/logging_util.cpp
+	src/utils/cmd_util.cpp
+	src/utils/resolution_util.cpp
+	src/utils/shell_util.cpp
+	src/utils/config_util.cpp
+	src/errors/error_handler.cpp
+	include/http_status_codes.h
+	src/threads/tray_thread.cpp
 	src/resources.rc
 )
 
 set(MAIN_DEPENDENCIES
-  errors
-  json_helper
-  string_helper
-  file_helper
-  process_helper
-  index_helper
-  interact_box_settings
-  trivia_game
-  message_box_process
+	errors
+	json_helper
+	string_helper
+	file_helper
+	process_helper
+	index_helper
+	interact_box_settings
+	trivia_game
+	message_box_process
 )
 
 if (NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_WRAPPERS)
@@ -77,8 +77,8 @@ if (NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_WRAPPERS)
 endif()
 
 add_dependencies(
-  interact_box
-  ${MAIN_DEPENDENCIES}
+	interact_box
+	${MAIN_DEPENDENCIES}
 )
 
 target_include_directories(interact_box PRIVATE
@@ -109,7 +109,7 @@ target_sources(interact_box PRIVATE ${OUT_RC})
 
 target_compile_options(interact_box PRIVATE
 	$<$<CONFIG:Debug>:-g -gdwarf-4 -O0 -fno-omit-frame-pointer>
-  -fpermissive
+	-fpermissive
 )
 
 target_link_options(interact_box PRIVATE
@@ -123,9 +123,9 @@ configure_package_config_file(
 )
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/malware_with_date_specific_deployment.json)
-  file(COPY ${CMAKE_SOURCE_DIR}/malware_with_date_specific_deployment.json DESTINATION ${CMAKE_BINARY_DIR}/installer)
+	file(COPY ${CMAKE_SOURCE_DIR}/malware_with_date_specific_deployment.json DESTINATION ${CMAKE_BINARY_DIR}/installer)
 else()
-  file(WRITE ${CMAKE_BINARY_DIR}/installer/malware_with_date_specific_deployment.json "{}")
+	file(WRITE ${CMAKE_BINARY_DIR}/installer/malware_with_date_specific_deployment.json "{}")
 endif()
 
 if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
@@ -145,6 +145,29 @@ else()
 	set(NSIS_ARG "IS_VISTA_BUILD")
 endif()
 
+set(SOUNDS_DIR "${CMAKE_SOURCE_DIR}/sounds")
+
+message(STATUS "This is the sounds dir: ${SOUNDS_DIR}")
+
+set(SOUND_PACKS "")
+
+file(GLOB CHILDREN RELATIVE "${SOUNDS_DIR}" "${SOUNDS_DIR}/*")
+
+foreach(child ${CHILDREN})
+	if (IS_DIRECTORY "${SOUNDS_DIR}/${child}")
+		list(APPEND SOUND_PACKS "${child}")
+	endif()
+endforeach()
+
+set(SOUND_INSTALL_COMMANDS "")
+
+foreach(pack ${SOUND_PACKS})
+	string(APPEND SOUND_INSTALL_COMMANDS
+		"    SetOutPath \"$INSTDIR\\sounds\\${pack}\"\n"
+		"    File /r \"..\\..\\sounds\\${pack}\\*.*\"\n\n"
+	)
+endforeach()
+
 configure_file(
 	"${CMAKE_SOURCE_DIR}/installer/install.nsi.in"
 	"${CMAKE_BINARY_DIR}/installer/install.nsi"
@@ -156,51 +179,51 @@ set(BOOT_BOOL_KEYS "")
 set(XP_BOOL_KEYS "")
 
 if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
-  set(BOOT_KEYS "\"bootImagesDir\": \"boot_images\",\n  \"shutdownImagesDir\": \"shutdown_images\",")
-  set(BOOT_BOOL_KEYS "\"useBootAndShutdownImages\": true,\n  \"useSystemBox\": true,")
+	set(BOOT_KEYS "\"bootImagesDir\": \"boot_images\",\n	\"shutdownImagesDir\": \"shutdown_images\",")
+	set(BOOT_BOOL_KEYS "\"useBootAndShutdownImages\": true,\n	\"useSystemBox\": true,")
 endif()
 
 if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IBXP)
-  set(XP_BOOL_KEYS "\"useTts\": true,")
+	set(XP_BOOL_KEYS "\"useTts\": true,")
 endif()
 
 configure_file(
-  "${CMAKE_SOURCE_DIR}/interact_box_config.json.in"
-  "${CMAKE_BINARY_DIR}/installer/interact_box_config.json"
-  @ONLY
+	"${CMAKE_SOURCE_DIR}/interact_box_config.json.in"
+	"${CMAKE_BINARY_DIR}/installer/interact_box_config.json"
+	@ONLY
 )
 
 add_custom_command(TARGET interact_box
-  POST_BUILD
-  COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/README.md -o ${CMAKE_BINARY_DIR}/installer/README.rtf
-  COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/LICENSE.md -o ${CMAKE_BINARY_DIR}/installer/LICENSE.rtf
-  COMMENT "Generating license and readme"  
+	POST_BUILD
+	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/README.md -o ${CMAKE_BINARY_DIR}/installer/README.rtf
+	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/LICENSE.md -o ${CMAKE_BINARY_DIR}/installer/LICENSE.rtf
+	COMMENT "Generating license and readme"	
 )
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/pre_compiled/system_message_process/system_box.exe AND NSIS_ARG STREQUAL "IS_WIN98_BUILD")
-    add_custom_command(TARGET interact_box
-    POST_BUILD
-    COMMAND makensis 
-    ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
-    COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
-  )
+		add_custom_command(TARGET interact_box
+		POST_BUILD
+		COMMAND makensis 
+		ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+		COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+	)
 else()
-  add_custom_command(TARGET interact_box
-    POST_BUILD
-    COMMAND makensis 
-    ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
-    COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
-  )
+	add_custom_command(TARGET interact_box
+		POST_BUILD
+		COMMAND makensis 
+		ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+		COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+	)
 endif()
 
 if (CREATE_ISO)
-  string(REPLACE " " "_" ISO_NAME ${PRODUCT_FLAVOR})
-  add_custom_command(
-    TARGET interact_box
-    POST_BUILD
-    COMMAND rm ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso || true
-    COMMAND mkisofs 
-    ARGS -o ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso -J -R -V "${PRODUCT_FLAVOR}" ${CMAKE_BINARY_DIR}/installer/setup.exe
-    COMMENT "Generating ISO for ${PRODUCT_FLAVOR}"
-  )
+	string(REPLACE " " "_" ISO_NAME ${PRODUCT_FLAVOR})
+	add_custom_command(
+		TARGET interact_box
+		POST_BUILD
+		COMMAND rm ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso || true
+		COMMAND mkisofs 
+		ARGS -o ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso -J -R -V "${PRODUCT_FLAVOR}" ${CMAKE_BINARY_DIR}/installer/setup.exe
+		COMMENT "Generating ISO for ${PRODUCT_FLAVOR}"
+	)
 endif()

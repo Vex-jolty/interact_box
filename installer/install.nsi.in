@@ -121,20 +121,7 @@ Section "Install"
     CreateDirectory "$INSTDIR\images"
     CreateDirectory "$INSTDIR\malware"
 
-    SetOutPath "$INSTDIR\sounds\kde_pack"
-    File "..\..\sounds\kde_pack\*.*"
-    
-    SetOutPath "$INSTDIR\sounds\default_pack"
-    File "..\..\sounds\default_pack\*.*"
-
-    SetOutPath "$INSTDIR\sounds\95_pack"
-    File "..\..\sounds\95_pack\*.*"
-
-    SetOutPath "$INSTDIR\sounds\7_pack"
-    File "..\..\sounds\7_pack\*.*"
-
-    SetOutPath "$INSTDIR\sounds\2000_pack"
-    File "..\..\sounds\2000_pack\*.*"
+@SOUND_INSTALL_COMMANDS@
 
     WriteRegStr HKCU "Software\Interact Box" "Install_Dir" "$INSTDIR"
 
