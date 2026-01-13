@@ -166,7 +166,9 @@ namespace Threads {
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(threadData->server));
 		addTrayIcon(hwnd);
 		#if WINVER > _WIN32_WINNT_NT4
-		notify(hwnd, L"Interact Box XP is now online!");
+		notify(hwnd, L"Interact Box is now online!");
+		#else
+		Utils::MessageBoxUtil::createBox("Interact Box", "Interact Box is now online", "i", "ok");
 		#endif
 		MSG msg = {};
 		while (!(threadData->server->abortNow.load()) && GetMessage(&msg, NULL, 0, 0)) {
