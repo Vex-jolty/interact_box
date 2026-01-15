@@ -234,11 +234,11 @@ int main(int argc, char* argv[]) {
 
 	// Initial debug logs
 #if WINVER > _WIN32_WINNT_NT4
-	loggingUtil.debug("Working directory is " + StringHelper::wideStringToString(fileUtil.workingDirectory) + "\n");
+	loggingUtil.debug("Working directory is " + StringHelper::wideStringToString(fileUtil.workingDirectory));
 	loggingUtil.debug("Wallpapers directory is " + StringHelper::wideStringToString(wallDir));
 	loggingUtil.debug("Malware directory is " + StringHelper::wideStringToString(malwareDir));
 #else
-	loggingUtil.debug("Working directory is " + fileUtil.workingDirectory + "\n");
+	loggingUtil.debug("Working directory is " + fileUtil.workingDirectory);
 	loggingUtil.debug("Wallpapers directory is " + wallDir);
 	loggingUtil.debug("Malware directory is " + malwareDir);
 #endif
@@ -252,16 +252,17 @@ int main(int argc, char* argv[]) {
 		pthread_t thread;
 
 		Threads::ThreadData threadData{
-			hInstance, &webServer
+			hInstance, &webServer, nullptr
 		};
 		loggingUtil.debug("Starting tray thread");
 		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void*)&threadData);
 		pthread_detach(thread);
 		loggingUtil.debug("Starting server");
 		webServer.start();
-		pthread_exit(0);
 		loggingUtil.debug("Successfully exited");
-		exit(0);
+		if (threadData.hwndPtr) {
+			PostMessage(*(threadData.hwndPtr), WM_CLOSE, 0, 0);
+		}
 	} catch (string& e) {
 		errorHandler.handleError(e);
 	} catch (string* e) {
@@ -275,6 +276,8 @@ int main(int argc, char* argv[]) {
 	} catch (exception* e) {
 		errorHandler.handleError(*e);
 	}
+
+	loggingUtil.stopLogging();
 
 #if WINVER > _WIN32_WINNT_NT4
 	RemoveVectoredExceptionHandler(handler);

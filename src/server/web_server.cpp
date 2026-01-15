@@ -56,6 +56,9 @@ namespace Server {
 
 			iter.base()->executeHandler(request, &response);
 			server->_loggingUtil->info("Response: " + response.toString());
+			if (request->route == "/abort") {
+				webServerAndRequest->server->serverAbort();
+			}
 		} catch (string& e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e, HttpStatus::InternalServerError);
@@ -64,11 +67,26 @@ namespace Server {
 			response.setResponse(nullopt, *e, HttpStatus::InternalServerError);
 		} catch (InteractBoxException& e) {
 			server->_errorHandler->handleError(e);
-			HttpStatus::Code status = boost::icontains(e.what(), "route is disabled") ? HttpStatus::Forbidden : HttpStatus::InternalServerError;
+			HttpStatus::Code status;
+			if (boost::icontains(e.what(), "route is disabled")) {
+				status = HttpStatus::Forbidden;
+			} else if (boost::icontains(e.what(), "unsupported feature")) {
+				status = HttpStatus::NotImplemented;
+			} else {
+				status = HttpStatus::InternalServerError;
+			}
 			response.setResponse(nullopt, e.what(), status);
 		} catch (InteractBoxException* e) {
 			server->_errorHandler->handleError(e);
-			response.setResponse(nullopt, e->what(), HttpStatus::InternalServerError);
+			HttpStatus::Code status;
+			if (boost::icontains(e->what(), "route is disabled")) {
+				status = HttpStatus::Forbidden;
+			} else if (boost::icontains(e->what(), "unsupported feature")) {
+				status = HttpStatus::NotImplemented;
+			} else {
+				status = HttpStatus::InternalServerError;
+			}
+			response.setResponse(nullopt, e->what(), status);
 		} catch (Json::Exception& e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e.what(), HttpStatus::BadRequest);
@@ -152,13 +170,11 @@ namespace Server {
 				pthread_join(serverThread, NULL);
 			}
 			closesocket(_clientSocket);
-		} while (!abortNow);
+		} while (!abortNow.load());
 
 		// Clean up
-		_loggingUtil->stopLogging();
 		closesocket(_listeningSocket);
 		WSACleanup();
-		exit(0);
 	}
 
 	void WebServer::respondWith(Http::HttpResponse response) {

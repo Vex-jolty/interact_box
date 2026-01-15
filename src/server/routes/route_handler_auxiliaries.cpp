@@ -146,7 +146,7 @@ namespace Server::Routes {
 			loggingUtil->err(errMessage);
 			#if WINVER > _WIN32_WINNT_NT4
 			Utils::MessageBoxUtil::createBox(
-				L"INTERACT BOX XP ERROR",
+				L"INTERACT BOX ERROR",
 				L"Error while setting theme: " + StringHelper::stringToWideString(errMessage),
 				L"e",
 				L"ok"
@@ -173,7 +173,6 @@ namespace Server::Routes {
 		wstring type = JsonHelper::getJsonWideStringValue(jsonRequest, L"type");
 		wstring buttons = JsonHelper::getJsonWideStringValue(jsonRequest, L"buttons");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
-		ProcessHelper::setToForeground(processName);
 	}
 
 	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil) {
@@ -194,7 +193,6 @@ namespace Server::Routes {
 		string type = JsonHelper::getJsonStringValue(jsonRequest, "type");
 		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
-		ProcessHelper::setToForeground(processName);
 	}
 
 	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil) {

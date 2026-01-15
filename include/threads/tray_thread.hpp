@@ -10,6 +10,7 @@ namespace Threads {
 	struct ThreadData {
 		HINSTANCE hInstance;
 		Server::WebServer* server;
+		HWND* hwndPtr;
 	};
 	class TrayThread {
 		public:
