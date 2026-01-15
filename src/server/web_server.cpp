@@ -3,11 +3,11 @@
 namespace Server {
 	using namespace std;
 	WebServer::WebServer(
-		#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 		wstring host,
-		#else
+#else
 		string host,
-		#endif
+#endif
 		int port,
 		shared_ptr<Utils::FileUtil> fileUtil,
 		shared_ptr<Utils::LoggingUtil> loggingUtil,
@@ -126,11 +126,11 @@ namespace Server {
 		}
 		serverAddr.sin_family = AF_INET;
 		serverAddr.sin_port = htons(_port);
-		#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 		serverAddr.sin_addr.s_addr = inet_addr(StringHelper::wideStringToString(_serverHost).c_str());
-		#else
+#else
 		serverAddr.sin_addr.s_addr = inet_addr(_serverHost.c_str());
-		#endif
+#endif
 		if (bind(_listeningSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
 			closesocket(_listeningSocket);
 			WSACleanup();
@@ -192,6 +192,10 @@ namespace Server {
 		}
 	}
 	void WebServer::serverAbort() {
-		abortNow = true;
+		abortNow.store(true);
+		if (_listeningSocket != INVALID_SOCKET) {
+			closesocket(_listeningSocket);
+			_listeningSocket = INVALID_SOCKET;
+		}
 	}
 }

@@ -12,7 +12,7 @@ namespace Threads {
 		switch (uMsg) {
 			case WM_DESTROY:
 			case WM_CLOSE:
-				if (server->abortNow.load()) {
+				if (!server->abortNow.load()) {
 					server->serverAbort();
 				}
 				removeTrayIcon(hwnd);
@@ -37,7 +37,7 @@ namespace Threads {
 								DestroyMenu(hMenu);
 							}
 							break;
-				}
+						}
 					case WM_MENUCOMMAND:
 					case WM_COMMAND:
 						if (LOWORD(wParam) == exitId) {
@@ -47,7 +47,7 @@ namespace Threads {
 							openSettings();
 						}
 						break;
-		}
+				}
 				return 0;
 			case WM_COMMAND:
 				if (LOWORD(wParam) == exitId) {
@@ -57,9 +57,9 @@ namespace Threads {
 					openSettings();
 				}
 				break;
-	}
+		}
 		return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
+	}
 
 	void TrayThread::addTrayIcon(HWND hwnd) {
 		NOTIFYICONDATA nid = {};
@@ -182,9 +182,6 @@ namespace Threads {
 				break;
 			}
 		}
-
-		//removeTrayIcon(hwnd);
-
 		return NULL;
 	}
-	}
+}
