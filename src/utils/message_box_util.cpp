@@ -15,6 +15,7 @@ namespace Utils {
 			L" --type " + getParsedString(type) + 
 			L" --buttons " + getParsedString(buttons)
 		);
+		ProcessHelper::setToForeground(workingDir + L"\\" + processName);
 	}
 
 	wstring MessageBoxUtil::getParsedString(wstring input) {
@@ -37,6 +38,7 @@ namespace Utils {
 			" --type " + getParsedString(type) + 
 			" --buttons " + getParsedString(buttons)
 		);
+		ProcessHelper::setToForeground(workingDir + "\\" + processName);
 	}
 
 	string MessageBoxUtil::getParsedString(string input) {

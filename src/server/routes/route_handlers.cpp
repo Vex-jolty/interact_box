@@ -177,7 +177,6 @@ namespace Server::Routes {
 			#else
 			Utils::MessageBoxUtil::createBox("Exiting", "Abort request received, Interact Box will now close", "warn", "ok");
 			#endif
-			ProcessHelper::setToForeground(_msgBoxProcessName);
 			res->setResponse(nullopt, "Aborted", 200);
 		}
 	), Http::HttpRoute(
@@ -229,8 +228,7 @@ namespace Server::Routes {
 			Utils::ShellUtil::openShell(L"tts_process.exe", L"open", _fileUtil->workingDirectory, L"\"" + StringHelper::stringToWideString(input) + L"\"");
 			res->setResponse(nullopt, req->body, 200);
 			#else
-			auto resBody = JsonHelper::createJsonBody({{"error", "not implemented"}});
-			res->setResponse(nullopt, resBody, HttpStatus::NotImplemented);
+			throw InteractBoxException(ErrorCodes::UnsupportedFeature);
 			#endif
 		},
 		_configUtil.getUseTts()
@@ -392,8 +390,7 @@ namespace Server::Routes {
 		"POST",
 		[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 			#if WINVER > _WIN32_WINNT_NT4
-			auto resBody = JsonHelper::createJsonBody({{"error", "not implemented"}});
-			res->setResponse(nullopt, resBody, HttpStatus::NotImplemented);
+			throw InteractBoxException(ErrorCodes::UnsupportedFeature);
 			#else
 			bool isShutdownScreen = JsonHelper::getJsonBoolValue(req->body, "isShutdownScreen");
 			_loggingUtil->debug("Directory is: " + isShutdownScreen ? _configUtil.getShutdownImagesDir() : _configUtil.getBootImagesDir());
@@ -412,8 +409,7 @@ namespace Server::Routes {
 		"POST",
 		[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 			#if WINVER > _WIN32_WINNT_NT4
-			auto resBody = JsonHelper::createJsonBody({{"error", "not implemented"}});
-			res->setResponse(nullopt, resBody, HttpStatus::NotImplemented);
+			throw InteractBoxException(ErrorCodes::UnsupportedFeature);
 		},
 		nullopt
 			#else

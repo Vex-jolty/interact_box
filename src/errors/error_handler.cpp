@@ -69,18 +69,15 @@ namespace Errors {
 	
 	#if WINVER > _WIN32_WINNT_NT4
   void ErrorHandler::showErrorBox(string message) {
-		Utils::MessageBoxUtil::createBox(L"INTERACT BOX XP ERROR", StringHelper::stringToWideString(message), L"e", L"ok");
-		ProcessHelper::setToForeground(_messageBoxPath);
+		Utils::MessageBoxUtil::createBox(L"INTERACT BOX ERROR", StringHelper::stringToWideString(message), L"e", L"ok");
   }
 
 	void ErrorHandler::showErrorBox(wstring message) {
-		Utils::MessageBoxUtil::createBox(L"INTERACT BOX XP ERROR", message, L"e", L"ok");
-		ProcessHelper::setToForeground(_messageBoxPath);
+		Utils::MessageBoxUtil::createBox(L"INTERACT BOX ERROR", message, L"e", L"ok");
   }
 	#else
 	void ErrorHandler::showErrorBox(string message) {
-		Utils::MessageBoxUtil::createBox("INTERACT BOX XP ERROR", message, "e", "ok");
-		ProcessHelper::setToForeground(_messageBoxPath);
+		Utils::MessageBoxUtil::createBox("INTERACT BOX ERROR", message, "e", "ok");
   }
 	#endif
 }
