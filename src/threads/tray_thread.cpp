@@ -12,6 +12,9 @@ namespace Threads {
 		switch (uMsg) {
 			case WM_DESTROY:
 			case WM_CLOSE:
+				if (server->abortNow.load()) {
+					server->serverAbort();
+				}
 				removeTrayIcon(hwnd);
 				PostQuitMessage(0);
 				return 0;
@@ -175,9 +178,6 @@ namespace Threads {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 			if (threadData->server->abortNow.load()) {
-#ifndef NDEBUG
-				MessageBoxA(NULL, "Attempting to destroy tray icon", "Debug", MB_ICONINFORMATION);
-#endif
 				DestroyWindow(hwnd);
 				break;
 			}
