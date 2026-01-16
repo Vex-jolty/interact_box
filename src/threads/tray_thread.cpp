@@ -5,7 +5,7 @@ namespace Threads {
 	using namespace Server;
 	using namespace std;
 	LRESULT CALLBACK TrayThread::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-		WebServer* server = reinterpret_cast<WebServer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		WebServer *server = reinterpret_cast<WebServer *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 		int exitId = 1;
 		int settingsId = 2;
 
@@ -21,23 +21,23 @@ namespace Threads {
 			case TRAY_MESSAGE:
 				switch (lParam) {
 					case WM_RBUTTONUP: {
-							HMENU hMenu = CreatePopupMenu();
-							if (hMenu) {
+						HMENU hMenu = CreatePopupMenu();
+						if (hMenu) {
 #if WINVER > _WIN32_WINNT_NT4
-								InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, L"Settings");
-								InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, L"Exit");
+							InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, L"Settings");
+							InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, L"Exit");
 #else
-								InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, "Settings");
-								InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, "Exit");
+							InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, "Settings");
+							InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, "Exit");
 #endif
-								POINT pt;
-								GetCursorPos(&pt);
-								SetForegroundWindow(hwnd);
-								TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
-								DestroyMenu(hMenu);
-							}
-							break;
+							POINT pt;
+							GetCursorPos(&pt);
+							SetForegroundWindow(hwnd);
+							TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+							DestroyMenu(hMenu);
 						}
+						break;
+					}
 					case WM_MENUCOMMAND:
 					case WM_COMMAND:
 						if (LOWORD(wParam) == exitId) {
@@ -117,22 +117,24 @@ namespace Threads {
 		try {
 			Utils::ShellUtil::openShell(settingsPath, L"open", workingDir);
 			ProcessHelper::setToForeground(settingsPath);
-		} catch (InteractBoxException& e) {
-			Utils::MessageBoxUtil::createBox(L"ERROR", StringHelper::stringToWideString(e.what()), L"e", L"ok");
+		} catch (InteractBoxException &e) {
+			Utils::MessageBoxUtil::createBox(
+				L"ERROR", StringHelper::stringToWideString(e.what()), L"e", L"ok"
+			);
 		}
 #else
 		string settingsPath = "interact_box_settings.exe";
 		try {
 			Utils::ShellUtil::openShell(settingsPath, "open", workingDir);
 			ProcessHelper::setToForeground(settingsPath);
-		} catch (InteractBoxException& e) {
+		} catch (InteractBoxException &e) {
 			Utils::MessageBoxUtil::createBox("ERROR", e.what(), "e", "ok");
 		}
 #endif
 	}
 
-	void* TrayThread::trayIconThread(void* arg) {
-		ThreadData* threadData = static_cast<ThreadData*>(arg);
+	void *TrayThread::trayIconThread(void *arg) {
+		ThreadData *threadData = static_cast<ThreadData *>(arg);
 #if WINVER > _WIN32_WINNT_NT4
 		const wchar_t CLASS_NAME[] = L"HiddenWindowClass";
 #else
@@ -147,19 +149,14 @@ namespace Threads {
 		RegisterClass(&wc);
 
 		HWND hwnd = CreateWindowEx(
-				0,
-				CLASS_NAME,
+			0, CLASS_NAME,
 #if WINVER > _WIN32_WINNT_NT4
-				L"Hidden Window",
+			L"Hidden Window",
 #else
-				"Hidden Window",
+			"Hidden Window",
 #endif
-				0,
-				CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-				NULL,
-				NULL,
-				threadData->hInstance,
-				NULL
+			0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL,
+			threadData->hInstance, NULL
 		);
 
 		if (hwnd == NULL) {
@@ -184,4 +181,4 @@ namespace Threads {
 		}
 		return NULL;
 	}
-}
+} // namespace Threads

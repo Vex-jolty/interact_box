@@ -28,13 +28,13 @@ namespace Utils {
 			bool getWarnAboutUrlsInTerminal();
 			bool getUseBootAndShutdownImages();
 			bool getUseSystemBox();
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::wstring getHost();
 			std::wstring getWallpaperDir();
 			std::wstring getMalwareDir();
 			std::vector<std::wstring> getMusicExtensions();
 			std::vector<std::wstring> getOpenableExtensions();
-			#else
+#else
 			std::string getHost();
 			std::string getWallpaperDir();
 			std::string getMalwareDir();
@@ -42,16 +42,16 @@ namespace Utils {
 			std::string getShutdownImagesDir();
 			std::vector<std::string> getMusicExtensions();
 			std::vector<std::string> getOpenableExtensions();
-			#endif
+#endif
 			LoggingLevel getLoggingLevel();
 
 		private:
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::wstring _host;
-			#else
+#else
 			std::string _host;
 
-			#endif
+#endif
 			int _port;
 			bool _useBootAndShutdownImages;
 			bool _useSystemBox;
@@ -73,21 +73,20 @@ namespace Utils {
 			bool _useTts;
 			bool _useColors;
 			bool _warnAboutUrlsInTerminal;
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::wstring _wallpaperDir;
 			std::wstring _malwareDir;
 			std::vector<std::wstring> _musicExtensions;
 			std::vector<std::wstring> _openableExtensions;
 			std::vector<std::wstring> _convertVector(std::vector<std::string> input);
-			#else
+#else
 			std::string _wallpaperDir;
 			std::string _malwareDir;
 			std::string _bootImagesDir;
 			std::string _shutdownImagesDir;
 			std::vector<std::string> _musicExtensions;
 			std::vector<std::string> _openableExtensions;
-			#endif
+#endif
 			LoggingLevel _loggingLevel;
-
 	};
-}
+} // namespace Utils

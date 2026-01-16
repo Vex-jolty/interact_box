@@ -2,13 +2,19 @@
 
 namespace Server::Http {
 	using namespace std;
-	HttpResponse::HttpResponse(optional<map<string, string>> headers, Json::Value jsonBody, optional<int> statusCode) {
+	HttpResponse::HttpResponse(
+		optional<map<string, string>> headers,
+		Json::Value jsonBody,
+		optional<int> statusCode
+	) {
 		setResponse(headers, jsonBody, statusCode);
 	}
-	HttpResponse::HttpResponse() {
-		setResponse(nullopt, "", 1);
-	}
-	void HttpResponse::setResponse(optional<map<string, string>> headers, Json::Value jsonBody, optional<int> statusCode) {
+	HttpResponse::HttpResponse() { setResponse(nullopt, "", 1); }
+	void HttpResponse::setResponse(
+		optional<map<string, string>> headers,
+		Json::Value jsonBody,
+		optional<int> statusCode
+	) {
 		_headers = headers.value_or(map<string, string>());
 		// Defaulting to JSON content-type
 		if (!_headers.count("content-type")) {
@@ -17,9 +23,7 @@ namespace Server::Http {
 		_body = jsonBody.toStyledString();
 		_statusCode = statusCode.value_or(HttpStatus::OK);
 	}
-  bool HttpResponse::isUnset() {
-    return _body.empty() && _statusCode < 100;
-  }
+	bool HttpResponse::isUnset() { return _body.empty() && _statusCode < 100; }
 	string HttpResponse::toString() {
 		string statusCodeString = to_string(_statusCode);
 		string fullStatusString = statusCodeString + " " + HttpStatus::reasonPhrase(_statusCode);
@@ -28,4 +32,4 @@ namespace Server::Http {
 		string result = "HTTP/1.1 " + fullStatusString + contentTypeString + bodyString;
 		return result;
 	}
-}
+} // namespace Server::Http

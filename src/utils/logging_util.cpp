@@ -3,61 +3,55 @@
 namespace Utils {
 	using namespace std;
 	LoggingUtil::LoggingUtil(
-		#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 		wstring fileName,
-		#else
+#else
 		string fileName,
-		#endif
+#endif
 		LoggingLevel loggingLevel
 	) {
 		bool fileExists = FileHelper::checkIfFileExists(fileName);
 		_fileHandle = FileHelper::makeFile(fileName, !fileExists);
 		_fileName = fileName;
 		_loggingLevel = loggingLevel;
-		string initialMessage = "Current logging level is " + getLevelString(_loggingLevel) + ". Launch with --loggingLevel <desired level> to alter this.";
+		string initialMessage = "Current logging level is " + getLevelString(_loggingLevel) +
+			". Launch with --loggingLevel <desired level> to alter this.";
 		initialMessage += "\r\nPossible logging levels: debug, info, err, warn\r\n";
-		FileHelper::writeToFile	(_fileHandle, initialMessage);
+		FileHelper::writeToFile(_fileHandle, initialMessage);
 	}
 
-	#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 	wstring LoggingUtil::getFileName() {
-	#else
+#else
 	string LoggingUtil::getFileName() {
-	#endif
+#endif
 		return _fileName;
 	}
 
-  void LoggingUtil::log(string content, LoggingLevel level) {
-		if (_loggingLevel > level) return;
-		if (content.empty()) return;
+	void LoggingUtil::log(string content, LoggingLevel level) {
+		if (_loggingLevel > level)
+			return;
+		if (content.empty())
+			return;
 		string levelString = getLevelString(level);
-		string dateTimeString = "[" + TimeUtil::getAndFormatCurrentTime("%Y-%m-%d %H:%M") +"]";
-		
-		if (!content.ends_with("\r\n")) content += "\r\n";
+		string dateTimeString = "[" + TimeUtil::getAndFormatCurrentTime("%Y-%m-%d %H:%M") + "]";
+
+		if (!content.ends_with("\r\n"))
+			content += "\r\n";
 		FileHelper::writeToFile(_fileHandle, levelString + " " + dateTimeString + " " + content);
-  }
-
-  void LoggingUtil::info(string content) {
-		log(content, LoggingLevel::INFO);
-  }
-
-	void LoggingUtil::debug(string content) {
-		log(content, LoggingLevel::DEBUG);
-  }
-
-	void LoggingUtil::warn(string content) {
-		log(content, LoggingLevel::WARN);
-  }
-
-	void LoggingUtil::err(string content) {
-		log(content, LoggingLevel::ERR);
-  }
-	
-	void LoggingUtil::stopLogging() {
-		FileHelper::closeFile(_fileHandle);
 	}
-  string LoggingUtil::getLevelString(LoggingLevel level) {
-    switch (level) {
+
+	void LoggingUtil::info(string content) { log(content, LoggingLevel::INFO); }
+
+	void LoggingUtil::debug(string content) { log(content, LoggingLevel::DEBUG); }
+
+	void LoggingUtil::warn(string content) { log(content, LoggingLevel::WARN); }
+
+	void LoggingUtil::err(string content) { log(content, LoggingLevel::ERR); }
+
+	void LoggingUtil::stopLogging() { FileHelper::closeFile(_fileHandle); }
+	string LoggingUtil::getLevelString(LoggingLevel level) {
+		switch (level) {
 			case INFO:
 				return "[INFO]";
 			case DEBUG:
@@ -69,5 +63,5 @@ namespace Utils {
 			default:
 				return "[???]";
 		}
-  }
-}
+	}
+} // namespace Utils

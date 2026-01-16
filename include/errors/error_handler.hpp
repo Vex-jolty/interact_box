@@ -8,34 +8,34 @@ namespace Errors {
 		public:
 			ErrorHandler(
 				std::shared_ptr<Utils::LoggingUtil> loggingUtil,
-				#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 				std::wstring messageBoxPath
-				#else
+#else
 				std::string messageBoxPath
-				#endif
+#endif
 			);
-			void handleError(HttpStatus::Code& c, std::string& route);
-			#if WINVER > _WIN32_WINNT_NT4
-			void handleError(std::wstring& e);
-			void handleError(std::wstring* e);
-			#endif
-			void handleError(std::string& e);
-			void handleError(std::string* e);
-			void handleError(std::exception& e);
-			void handleError(std::exception* e);
-			void handleError(InteractBoxException& e);
-			void handleError(InteractBoxException* e);
+			void handleError(HttpStatus::Code &c, std::string &route);
+#if WINVER > _WIN32_WINNT_NT4
+			void handleError(std::wstring &e);
+			void handleError(std::wstring *e);
+#endif
+			void handleError(std::string &e);
+			void handleError(std::string *e);
+			void handleError(std::exception &e);
+			void handleError(std::exception *e);
+			void handleError(InteractBoxException &e);
+			void handleError(InteractBoxException *e);
 
 		private:
 			std::shared_ptr<Utils::LoggingUtil> _loggingUtil;
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::wstring _messageBoxPath;
 			void showErrorBox(std::wstring message);
 			void showErrorBox(std::string message);
 			std::wstring _convertMessage(std::string message);
-			#else
+#else
 			std::string _messageBoxPath;
 			void showErrorBox(std::string message);
-			#endif
+#endif
 	};
 } // namespace Errors

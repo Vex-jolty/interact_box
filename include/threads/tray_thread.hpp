@@ -9,18 +9,19 @@
 namespace Threads {
 	struct ThreadData {
 		HINSTANCE hInstance;
-		Server::WebServer* server;
-		HWND* hwndPtr;
+		Server::WebServer *server;
+		HWND *hwndPtr;
 	};
 	class TrayThread {
 		public:
-			static void* trayIconThread(void* arg);
+			static void *trayIconThread(void *arg);
+
 		private:
 			static LRESULT CALLBACK windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 			static void addTrayIcon(HWND hwnd);
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			static void notify(HWND hwnd, std::wstring message);
-			#endif
+#endif
 			static void removeTrayIcon(HWND hwnd);
 			static void openSettings();
 	};

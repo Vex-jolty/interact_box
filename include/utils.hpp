@@ -1,40 +1,40 @@
 #pragma once
 #include <ctime>
 #ifndef _WINSOCK2API_
-#include <winsock2.h>
+	#include <winsock2.h>
 #endif
 #ifndef _WINDOWS_
-#include <windows.h>
+	#include <windows.h>
 #endif
 #ifndef _GLIBCXX_VECTOR
-#include <vector>
+	#include <vector>
 #endif
 #ifndef _GLIBCXX_STRING
-#include <string>
+	#include <string>
 #endif
 #ifndef _GLIBCXX_IOSTREAM
-#include <iostream>
+	#include <iostream>
 #endif
 #ifndef _GLIBCXX_ALGORITHM
-#include <algorithm>
+	#include <algorithm>
 #endif
 #ifndef _GLIBCXX_ITERATOR
-#include <iterator>
+	#include <iterator>
 #endif
 #ifndef _GLIBCXX_FSTREAM
-#include <fstream>
+	#include <fstream>
 #endif
 #ifndef _GLIBCXX_MAP
-#include <map>
+	#include <map>
 #endif
 #ifndef _INC_TOOLHELP32
-#include <tlhelp32.h>
+	#include <tlhelp32.h>
 #endif
 #ifndef _INC_TCHAR
-#include <tchar.h>
+	#include <tchar.h>
 #endif
 #ifndef _GLIBCXX_OPTIONAL
-#include <optional>
+	#include <optional>
 #endif
 #include "exported.hpp"
 #include <regex>

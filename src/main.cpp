@@ -54,27 +54,24 @@ wstring getExceptionName(DWORD code) {
 }
 
 // Optional wide string to inform calling function of potential failure, or of file name
-optional<wstring> createMinidump(EXCEPTION_POINTERS* exceptionPointers) {
+optional<wstring> createMinidump(EXCEPTION_POINTERS *exceptionPointers) {
 	TCHAR szFileName[MAX_PATH];
-	wstring localTime = StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M"));
+	wstring localTime =
+		StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M"));
 	wstring workingDir = FileHelper::getWorkingDirectory();
 	wstring fileName = L"crashDump-" + localTime + L".dmp";
 
 	HANDLE fileHandle = FileHelper::makeFile(workingDir + L"\\" + fileName);
-	if (fileHandle == INVALID_HANDLE_VALUE) return nullopt;
+	if (fileHandle == INVALID_HANDLE_VALUE)
+		return nullopt;
 
 	MINIDUMP_EXCEPTION_INFORMATION mdei;
 	mdei.ThreadId = GetCurrentThreadId();
 	mdei.ExceptionPointers = exceptionPointers;
 
 	MiniDumpWriteDump(
-		GetCurrentProcess(),
-		GetCurrentProcessId(),
-		fileHandle,
-		MiniDumpNormal,
-		(exceptionPointers ? &mdei : nullptr),
-		nullptr,
-		nullptr
+		GetCurrentProcess(), GetCurrentProcessId(), fileHandle, MiniDumpNormal,
+		(exceptionPointers ? &mdei : nullptr), nullptr, nullptr
 	);
 
 	FileHelper::closeFile(fileHandle);
@@ -83,28 +80,21 @@ optional<wstring> createMinidump(EXCEPTION_POINTERS* exceptionPointers) {
 
 LONG CALLBACK vectoredExceptionHandler(PEXCEPTION_POINTERS exceptionPointers) {
 	wstring code = getExceptionName(exceptionPointers->ExceptionRecord->ExceptionCode);
-	if (code.empty()) return EXCEPTION_EXECUTE_HANDLER;
+	if (code.empty())
+		return EXCEPTION_EXECUTE_HANDLER;
 	optional<wstring> miniDumpFile = createMinidump(exceptionPointers);
 	DWORD lastError = GetLastError();
-	wstring message = L"Interact Box has encountered an unhandled error.\nException code: " +
-		code +
-		L"\n" +
-		L"Error code: " +
-		to_wstring(lastError) + L"\n";
+	wstring message = L"Interact Box has encountered an unhandled error.\nException code: " + code +
+		L"\n" + L"Error code: " + to_wstring(lastError) + L"\n";
 	message +=
-		(
-			miniDumpFile.has_value() ?
-			L"A minidump file has been created (" + miniDumpFile.value() + L")" :
-			L"An attempt to create a minidump file failed"
-		) + L"\n";
-	message += L"This message should never be shown. Something seriously wrong occured. Please provide the dump file to the developer, with a description of what you were doing and what route was called, along with any relevant details.\n";
+		(miniDumpFile.has_value() ? L"A minidump file has been created (" + miniDumpFile.value() + L")"
+															: L"An attempt to create a minidump file failed") +
+		L"\n";
+	message += L"This message should never be shown. Something seriously wrong occured. Please "
+						 L"provide the dump file to the developer, with a description of what you were doing "
+						 L"and what route was called, along with any relevant details.\n";
 	message += L"Interact Box will now attempt to recover from this error.";
-	MessageBox(
-		NULL,
-		message.c_str(),
-		L"INTERACT BOX UNHANDLED ERROR",
-		MB_ICONERROR
-	);
+	MessageBox(NULL, message.c_str(), L"INTERACT BOX UNHANDLED ERROR", MB_ICONERROR);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -157,19 +147,23 @@ string getExceptionName(DWORD code) {
 	}
 }
 
-LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS* pExceptionInfo) {
-	HANDLE hFile = CreateFile("crashdump.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS *pExceptionInfo) {
+	HANDLE hFile =
+		CreateFile("crashdump.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {
 		MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
 		exceptionInfo.ThreadId = GetCurrentThreadId();
 		exceptionInfo.ExceptionPointers = pExceptionInfo;
 
-		MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpNormal, &exceptionInfo, NULL, NULL);
+		MiniDumpWriteDump(
+			GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpNormal, &exceptionInfo, NULL, NULL
+		);
 		CloseHandle(hFile);
 	}
 	string code = getExceptionName(pExceptionInfo->ExceptionRecord->ExceptionCode);
 	string errorMessage = "Interact Box has encountered a fatal error and will be shut down.\n";
-	errorMessage += "Error code: " + to_string(GetLastError()) + "\n" + "Exception Code: " + code + "\n";
+	errorMessage +=
+		"Error code: " + to_string(GetLastError()) + "\n" + "Exception Code: " + code + "\n";
 	errorMessage += "A minidump file has been created (crashdump.dmp)";
 	MessageBox(NULL, errorMessage.c_str(), "INTERACT BOX FATAL ERROR", MB_ICONERROR);
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -178,18 +172,25 @@ LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 pthread_mutex_t themeMutex = PTHREAD_MUTEX_INITIALIZER;
 // cSpell:enable
 
-LoggingLevel setLoggingLevel(int argc, char* argv[]) {
-	if (argc < 2 || argv[1] != "--loglevel") return LoggingLevel::DEBUG;
-	if (boost::algorithm::istarts_with(argv[2], "err")) return LoggingLevel::ERR;
-	else if (boost::algorithm::istarts_with(argv[2], "warn")) return LoggingLevel::WARN;
-	else if (boost::algorithm::istarts_with(argv[2], "info")) return LoggingLevel::INFO;
+LoggingLevel setLoggingLevel(int argc, char *argv[]) {
+	if (argc < 2 || argv[1] != "--loglevel")
+		return LoggingLevel::DEBUG;
+	if (boost::algorithm::istarts_with(argv[2], "err"))
+		return LoggingLevel::ERR;
+	else if (boost::algorithm::istarts_with(argv[2], "warn"))
+		return LoggingLevel::WARN;
+	else if (boost::algorithm::istarts_with(argv[2], "info"))
+		return LoggingLevel::INFO;
 	return LoggingLevel::DEBUG;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 #if WINVER > _WIN32_WINNT_NT4
 	PVOID handler = AddVectoredExceptionHandler(1, vectoredExceptionHandler);
-	Utils::ConfigUtil configUtil(StringHelper::wideStringToString(FileHelper::getWindowsDirectory()) + "\\interact_box_config.json");
+	Utils::ConfigUtil configUtil(
+		StringHelper::wideStringToString(FileHelper::getWindowsDirectory()) +
+		"\\interact_box_config.json"
+	);
 	wstring host = configUtil.getHost();
 #else
 	SetUnhandledExceptionFilter(topLevelExceptionHandler);
@@ -218,11 +219,16 @@ int main(int argc, char* argv[]) {
 	// Start utilities
 #if WINVER > _WIN32_WINNT_NT4
 	Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
-	wstring logFileName = fileUtil.workingDirectory + L"\\" + StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M")) + L"-logfile.log";
+	wstring logFileName = fileUtil.workingDirectory + L"\\" +
+		StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M")) +
+		L"-logfile.log";
 	wstring msgBoxProcessName = fileUtil.workingDirectory + L"\\message_box_process.exe";
 #else
-	Utils::FileUtil fileUtil(wallDir, malwareDir, bootImagesDir, shutdownImagesDir, openableExtensions, musicExtensions);
-	string logFileName = fileUtil.workingDirectory + "\\" + Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
+	Utils::FileUtil fileUtil(
+		wallDir, malwareDir, bootImagesDir, shutdownImagesDir, openableExtensions, musicExtensions
+	);
+	string logFileName = fileUtil.workingDirectory + "\\" +
+		Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
 	string msgBoxProcessName = fileUtil.workingDirectory + "\\message_box_process.exe";
 #endif
 
@@ -230,11 +236,14 @@ int main(int argc, char* argv[]) {
 	shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);
 	shared_ptr<Utils::FileUtil> sharedFileUtil = make_shared<Utils::FileUtil>(fileUtil);
 	Errors::ErrorHandler errorHandler(sharedLoggingUtil, msgBoxProcessName);
-	unique_ptr<Errors::ErrorHandler> errorHandlerPtr = make_unique<Errors::ErrorHandler>(errorHandler);
+	unique_ptr<Errors::ErrorHandler> errorHandlerPtr =
+		make_unique<Errors::ErrorHandler>(errorHandler);
 
 	// Initial debug logs
 #if WINVER > _WIN32_WINNT_NT4
-	loggingUtil.debug("Working directory is " + StringHelper::wideStringToString(fileUtil.workingDirectory));
+	loggingUtil.debug(
+		"Working directory is " + StringHelper::wideStringToString(fileUtil.workingDirectory)
+	);
 	loggingUtil.debug("Wallpapers directory is " + StringHelper::wideStringToString(wallDir));
 	loggingUtil.debug("Malware directory is " + StringHelper::wideStringToString(malwareDir));
 #else
@@ -243,19 +252,20 @@ int main(int argc, char* argv[]) {
 	loggingUtil.debug("Malware directory is " + malwareDir);
 #endif
 	// Starting server
-	Server::WebServer webServer = WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
-	Server::Routes::RouteHandler routeHandler(configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName, &themeMutex);
+	Server::WebServer webServer =
+		WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
+	Server::Routes::RouteHandler routeHandler(
+		configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName, &themeMutex
+	);
 
 	webServer.addRoutes(routeHandler.getRoutes());
 	try {
 		HINSTANCE hInstance = GetModuleHandle(NULL);
 		pthread_t thread;
 
-		Threads::ThreadData threadData{
-			hInstance, &webServer, nullptr
-		};
+		Threads::ThreadData threadData{hInstance, &webServer, nullptr};
 		loggingUtil.debug("Starting tray thread");
-		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void*)&threadData);
+		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void *)&threadData);
 		pthread_detach(thread);
 		loggingUtil.debug("Starting server");
 		webServer.start();
@@ -263,17 +273,17 @@ int main(int argc, char* argv[]) {
 		if (threadData.hwndPtr) {
 			PostMessage(*(threadData.hwndPtr), WM_CLOSE, 0, 0);
 		}
-	} catch (string& e) {
+	} catch (string &e) {
 		errorHandler.handleError(e);
-	} catch (string* e) {
+	} catch (string *e) {
 		errorHandler.handleError(*e);
-	} catch (InteractBoxException& e) {
+	} catch (InteractBoxException &e) {
 		errorHandler.handleError(e);
-	} catch (InteractBoxException* e) {
+	} catch (InteractBoxException *e) {
 		errorHandler.handleError(e);
-	} catch (exception& e) {
+	} catch (exception &e) {
 		errorHandler.handleError(e);
-	} catch (exception* e) {
+	} catch (exception *e) {
 		errorHandler.handleError(*e);
 	}
 

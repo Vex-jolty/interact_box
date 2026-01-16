@@ -2,7 +2,7 @@
 #include <sdkddkver.h>
 
 #if WINVER < _WIN32_WINNT_VISTA
-#define _USE_32BIT_TIME_T 1
+	#define _USE_32BIT_TIME_T 1
 #endif
 
 #include <winsock2.h>

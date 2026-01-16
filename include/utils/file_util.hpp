@@ -6,27 +6,27 @@
 
 namespace Utils {
 	struct DirAndVector {
-		#if WINVER > _WIN32_WINNT_NT4
-		std::wstring dir;
-		std::vector<std::wstring>* vec;
-		#else
-		std::string dir;
-		std::vector<std::string>* vec;
-		#endif
+#if WINVER > _WIN32_WINNT_NT4
+			std::wstring dir;
+			std::vector<std::wstring> *vec;
+#else
+			std::string dir;
+			std::vector<std::string> *vec;
+#endif
 	};
 	struct ExtensionsAndVector {
-		#if WINVER > _WIN32_WINNT_NT4
-		std::vector<std::wstring>* extensions;
-		std::vector<std::wstring>* vec;
-		#else
-		std::vector<std::string>* extensions;
-		std::vector<std::string>* vec;
-		#endif
+#if WINVER > _WIN32_WINNT_NT4
+			std::vector<std::wstring> *extensions;
+			std::vector<std::wstring> *vec;
+#else
+			std::vector<std::string> *extensions;
+			std::vector<std::string> *vec;
+#endif
 	};
 	class FileUtil {
 
 		public:
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			FileUtil(
 				std::wstring wallDir,
 				std::wstring malwareDir,
@@ -49,11 +49,14 @@ namespace Utils {
 			std::wstring deleteRandomFile();
 			std::vector<std::wstring> getSoundPacks();
 			std::wstring openRandomFile(std::optional<std::wstring> type = std::nullopt, int retries = 0);
-			std::wstring selectRandomFile(std::optional<std::wstring> type = std::nullopt, int retries = 0);
+			std::wstring selectRandomFile(
+				std::optional<std::wstring> type = std::nullopt,
+				int retries = 0
+			);
 			void openFile(std::wstring file);
 			void openFile(std::wstring file, std::wstring parameters);
 			void setSoundPack(std::wstring pack);
-			#else
+#else
 			FileUtil(
 				std::string wallDir,
 				std::string malwareDir,
@@ -84,45 +87,51 @@ namespace Utils {
 			void openFile(std::string file);
 			void openFile(std::string file, std::string parameters);
 			void setSoundPack(std::string pack);
-			#endif
-			
+#endif
+
 		private:
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::wstring activeSoundPack;
-			std::map<std::wstring, std::vector<std::wstring>*> _mapOfOpenableOptions;
-			#else
+			std::map<std::wstring, std::vector<std::wstring> *> _mapOfOpenableOptions;
+#else
 			std::string activeSoundPack;
-			std::map<std::string, std::vector<std::string>*> _mapOfOpenableOptions;
-			#endif
+			std::map<std::string, std::vector<std::string> *> _mapOfOpenableOptions;
+#endif
 
 			void _listFiles(
-				#if WINVER > _WIN32_WINNT_NT4
-				const std::wstring& directory,
-				#else
-				const std::string& directory,
-				#endif
+#if WINVER > _WIN32_WINNT_NT4
+				const std::wstring &directory,
+#else
+				const std::string &directory,
+#endif
 				std::vector<DirAndVector> dirsAndVectors,
 				std::vector<ExtensionsAndVector> extensionsAndVectors
 			);
 			void _addToOpenableOptions(
-				#if WINVER > _WIN32_WINNT_NT4
-				std::wstring& fullPath,
-				#else
-				std::string& fullPath,
-				#endif
+#if WINVER > _WIN32_WINNT_NT4
+				std::wstring &fullPath,
+#else
+				std::string &fullPath,
+#endif
 				std::vector<DirAndVector> dirsAndVectors,
 				std::vector<ExtensionsAndVector> extensionsAndVectors
 			);
 
-			#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 			std::vector<std::wstring> checkDirAndFilterFiles(std::wstring dir, std::wregex pattern);
 			std::wstring _getFullPath(std::wstring dir, std::wregex pattern);
-			std::tuple<std::wstring, int> _getRandomFile(std::vector<std::wstring> files, bool isDefaultFiles = false);
+			std::tuple<std::wstring, int> _getRandomFile(
+				std::vector<std::wstring> files,
+				bool isDefaultFiles = false
+			);
 
-			#else
+#else
 			std::vector<std::string> checkDirAndFilterFiles(std::string dir, std::regex pattern);
 			std::string _getFullPath(std::string dir, std::regex pattern);
-			std::tuple<std::string, int> _getRandomFile(std::vector<std::string> files, bool isDefaultFiles = false);
-			#endif
+			std::tuple<std::string, int> _getRandomFile(
+				std::vector<std::string> files,
+				bool isDefaultFiles = false
+			);
+#endif
 	};
 } // namespace Utils

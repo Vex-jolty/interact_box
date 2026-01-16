@@ -2,7 +2,7 @@
 
 namespace Utils {
 	using namespace std;
-	#if WINVER > _WIN32_WINNT_NT4
+#if WINVER > _WIN32_WINNT_NT4
 	FileUtil::FileUtil(
 		wstring wallDir,
 		wstring malwareDir,
@@ -13,43 +13,27 @@ namespace Utils {
 
 		// Getting Windows directory
 		windowsDir = FileHelper::getWindowsDirectory();
-		
+
 		wregex diskPattern(LR"([A-Za-z]:)");
 		wallDir = _getFullPath(wallDir, diskPattern);
 		malwareDir = _getFullPath(malwareDir, diskPattern);
-		vector<wstring> themeExtension = { L".theme" };
-		vector<wstring> winampExtension = { L".wsz" };
-		DirAndVector wallDirAndVec = {
-			wallDir,
-			&wallpaperFiles
+		vector<wstring> themeExtension = {L".theme"};
+		vector<wstring> winampExtension = {L".wsz"};
+		DirAndVector wallDirAndVec = {wallDir, &wallpaperFiles};
+		DirAndVector malwareDirAndVec = {malwareDir, &malwareFiles};
+		ExtensionsAndVector openableExtensionsAndVec = {&openableExtensions, &openableFiles};
+		ExtensionsAndVector musicExtensionsAndVec = {&musicExtensions, &musicFiles};
+		ExtensionsAndVector themeExtensionAndVec = {&themeExtension, &themeFiles};
+		ExtensionsAndVector winampExtensionAndVec = {&winampExtension, &winampSkinFiles};
+		vector<DirAndVector> dirsAndVectors = {wallDirAndVec, malwareDirAndVec};
+		vector<ExtensionsAndVector> extensionsAndVectors = {
+			openableExtensionsAndVec, winampExtensionAndVec, musicExtensionsAndVec, themeExtensionAndVec
 		};
-		DirAndVector malwareDirAndVec = {
-			malwareDir,
-			&malwareFiles
-		};
-		ExtensionsAndVector openableExtensionsAndVec = {
-			&openableExtensions,
-			&openableFiles
-		};
-		ExtensionsAndVector musicExtensionsAndVec = {
-			&musicExtensions,
-			&musicFiles
-		};
-		ExtensionsAndVector themeExtensionAndVec = {
-			&themeExtension,
-			&themeFiles
-		};
-		ExtensionsAndVector winampExtensionAndVec = {
-			&winampExtension,
-			&winampSkinFiles
-		};
-		vector<DirAndVector> dirsAndVectors = { wallDirAndVec, malwareDirAndVec };
-		vector<ExtensionsAndVector> extensionsAndVectors = { openableExtensionsAndVec, winampExtensionAndVec, musicExtensionsAndVec, themeExtensionAndVec };
 		_listFiles(L"C:", dirsAndVectors, extensionsAndVectors);
-		
+
 		activeSoundPack = L"default";
 
-		vector<wstring> bmpExtension = { L".bmp" };
+		vector<wstring> bmpExtension = {L".bmp"};
 		wallpaperFiles = FileHelper::filterFiles(wallpaperFiles, bmpExtension);
 		_mapOfOpenableOptions[L"default"] = &openableFiles;
 		_mapOfOpenableOptions[L"malware"] = &malwareFiles;
@@ -62,7 +46,7 @@ namespace Utils {
 	// Private
 
 	void FileUtil::_listFiles(
-		const wstring& directory,
+		const wstring &directory,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
@@ -92,22 +76,24 @@ namespace Utils {
 	}
 
 	void FileUtil::_addToOpenableOptions(
-		wstring& fullPath,
+		wstring &fullPath,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
 		DWORD attributes = GetFileAttributes(fullPath.c_str());
-		if (boost::iends_with(fullPath.c_str(), L"malware_date_settings.exe")) return;
-		if (attributes & FILE_ATTRIBUTE_DIRECTORY) return;
-		for (auto& dirAndVec : dirsAndVectors) {
+		if (boost::iends_with(fullPath.c_str(), L"malware_date_settings.exe"))
+			return;
+		if (attributes & FILE_ATTRIBUTE_DIRECTORY)
+			return;
+		for (auto &dirAndVec : dirsAndVectors) {
 			if (FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
 				dirAndVec.vec->push_back(fullPath);
 				break;
 			}
 		}
-		for (auto& extensionsAndVec : extensionsAndVectors) {
+		for (auto &extensionsAndVec : extensionsAndVectors) {
 			auto extensions = *extensionsAndVec.extensions;
-			for (auto& extension : extensions) {
+			for (auto &extension : extensions) {
 				if (boost::iends_with(fullPath, extension)) {
 					extensionsAndVec.vec->push_back(fullPath);
 					break;
@@ -129,11 +115,12 @@ namespace Utils {
 
 	wstring FileUtil::_getFullPath(wstring dir, wregex pattern) {
 		wsmatch match;
-		if (regex_search(dir, match, pattern)) return StringHelper::toLowercase(dir);
+		if (regex_search(dir, match, pattern))
+			return StringHelper::toLowercase(dir);
 		return StringHelper::toLowercase(workingDirectory + L"\\" + dir);
 	}
 
-  tuple<wstring, int> FileUtil::_getRandomFile(vector<wstring> files, bool isDefaultFiles) {
+	tuple<wstring, int> FileUtil::_getRandomFile(vector<wstring> files, bool isDefaultFiles) {
 		int randomNumber = IndexHelper::getRandomIndex(files);
 		wstring randomFile = files[randomNumber];
 		if (isDefaultFiles) {
@@ -143,7 +130,7 @@ namespace Utils {
 			}
 		}
 		return make_tuple(randomFile, randomNumber);
-  }
+	}
 
 	void FileUtil::openFile(wstring file) {
 		LPCWSTR lpFile = file.c_str();
@@ -171,18 +158,20 @@ namespace Utils {
 		}
 	}
 
-	void FileUtil::setSoundPack(wstring pack) {
-		activeSoundPack = pack;
-	}
+	void FileUtil::setSoundPack(wstring pack) { activeSoundPack = pack; }
 
 	// Public
 
 	wstring FileUtil::setWallpaper(wstring currentWallpaper) {
 		int randomNumber = IndexHelper::getRandomIndex(wallpaperFiles);
-		wstring wallpaperPath =
-			wallpaperFiles[randomNumber] == currentWallpaper ?
-			wallpaperFiles[randomNumber == wallpaperFiles.size() - 1 ? randomNumber - 1 : randomNumber + 1] : wallpaperFiles[randomNumber];
-		BOOL result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (PVOID)wallpaperPath.c_str(), SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+		wstring wallpaperPath = wallpaperFiles[randomNumber] == currentWallpaper
+			? wallpaperFiles
+					[randomNumber == wallpaperFiles.size() - 1 ? randomNumber - 1 : randomNumber + 1]
+			: wallpaperFiles[randomNumber];
+		BOOL result = SystemParametersInfo(
+			SPI_SETDESKWALLPAPER, 0, (PVOID)wallpaperPath.c_str(),
+			SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
+		);
 		if (!result) {
 			throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
 		}
@@ -193,22 +182,25 @@ namespace Utils {
 		int randomNumber = IndexHelper::getRandomIndex(files);
 		wstring randomFile = files[randomNumber];
 		while (randomFile.starts_with(workingDirectory)) {
-			if (randomNumber >= files.size() - 1) randomNumber = 0;
-			else randomNumber++;
+			if (randomNumber >= files.size() - 1)
+				randomNumber = 0;
+			else
+				randomNumber++;
 			randomFile = files[randomNumber];
 		}
 		bool deletionOk = DeleteFile(randomFile.c_str());
 		files.erase(files.begin() + randomNumber);
-		for (auto& [key, val] : _mapOfOpenableOptions) {
+		for (auto &[key, val] : _mapOfOpenableOptions) {
 			auto rawVal = *val;
-			rawVal.erase(remove_if(
-				rawVal.begin(), rawVal.end(),
-				[&randomFile](const wstring& x) {
-					return x == randomFile;
-				}
-			), rawVal.end());
+			rawVal.erase(
+				remove_if(
+					rawVal.begin(), rawVal.end(), [&randomFile](const wstring &x) { return x == randomFile; }
+				),
+				rawVal.end()
+			);
 		}
-		if (!deletionOk) randomFile = deleteRandomFile();
+		if (!deletionOk)
+			randomFile = deleteRandomFile();
 		return randomFile;
 	}
 
@@ -225,7 +217,8 @@ namespace Utils {
 
 		do {
 			const wstring fileOrDirectory = findFileData.cFileName;
-			if (fileOrDirectory == L"." || fileOrDirectory == L".." || fileOrDirectory.ends_with(activeSoundPack)) {
+			if (fileOrDirectory == L"." || fileOrDirectory == L".." ||
+					fileOrDirectory.ends_with(activeSoundPack)) {
 				continue;
 			}
 			wstring fullPath = soundsDir + L"\\" + fileOrDirectory;
@@ -241,12 +234,13 @@ namespace Utils {
 	wstring FileUtil::openRandomFile(optional<wstring> type, int retries) {
 		wstring typeName = type.value_or(L"default");
 		vector<wstring> filesToOpen = *_mapOfOpenableOptions[typeName];
-		if (filesToOpen.size() == 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+		if (filesToOpen.size() == 0)
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
 		int randomNumber = IndexHelper::getRandomIndex(filesToOpen);
 		wstring randomFile = filesToOpen[randomNumber];
 		try {
 			openFile(randomFile);
-		} catch (InteractBoxException& e) {
+		} catch (InteractBoxException &e) {
 			if (retries < 2) {
 				retries++;
 				filesToOpen.erase(filesToOpen.begin() + randomNumber);
@@ -258,14 +252,15 @@ namespace Utils {
 		return randomFile;
 	}
 
-  wstring FileUtil::selectRandomFile(optional<wstring> type, int retries) {
-    wstring typeName = type.value_or(L"default");
+	wstring FileUtil::selectRandomFile(optional<wstring> type, int retries) {
+		wstring typeName = type.value_or(L"default");
 		vector<wstring> filesToOpen = *_mapOfOpenableOptions[typeName];
-		if (filesToOpen.size() == 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+		if (filesToOpen.size() == 0)
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
 		tuple<wstring, int> randomFileAndNumber = _getRandomFile(filesToOpen);
 		wstring randomFile = get<0>(randomFileAndNumber);
 		return randomFile;
-  }
+	}
 
 	wstring FileUtil::getRandomMalware() {
 		int randomNumber = IndexHelper::getRandomIndex(malwareFiles);
@@ -281,8 +276,8 @@ namespace Utils {
 		}
 		return randomFile;
 	}
-	#else
-		FileUtil::FileUtil(
+#else
+	FileUtil::FileUtil(
 		string wallDir,
 		string malwareDir,
 		string bootImagesDir,
@@ -294,7 +289,7 @@ namespace Utils {
 
 		// Getting Windows directory
 		windowsDir = FileHelper::getWindowsDirectory();
-		
+
 		// Getting full path to all directories
 		regex diskPattern(R"([A-Za-z]:\s)");
 		wallDir = _getFullPath(wallDir, diskPattern);
@@ -302,49 +297,29 @@ namespace Utils {
 		bootImagesDir = _getFullPath(bootImagesDir, diskPattern);
 		shutdownImagesDir = _getFullPath(shutdownImagesDir, diskPattern);
 
-		vector<string> themeExtension = { ".theme" };
-		vector<string> winampExtension = { ".wsz" };
+		vector<string> themeExtension = {".theme"};
+		vector<string> winampExtension = {".wsz"};
 
 		// Grouping directories and extensions
-		DirAndVector wallDirAndVec = {
-			wallDir,
-			&wallpaperFiles
+		DirAndVector wallDirAndVec = {wallDir, &wallpaperFiles};
+		DirAndVector malwareDirAndVec = {malwareDir, &malwareFiles};
+		DirAndVector bootImagesDirAndVec = {bootImagesDir, &bootImageFiles};
+		DirAndVector shutdownImagesDirAndVec = {shutdownImagesDir, &shutdownImagesFiles};
+		ExtensionsAndVector openableExtensionsAndVec = {&openableExtensions, &openableFiles};
+		ExtensionsAndVector musicExtensionsAndVec = {&musicExtensions, &musicFiles};
+		ExtensionsAndVector themeExtensionAndVec = {&themeExtension, &themeFiles};
+		ExtensionsAndVector winampExtensionAndVec = {&winampExtension, &winampSkinFiles};
+		vector<DirAndVector> dirsAndVectors = {
+			wallDirAndVec, malwareDirAndVec, bootImagesDirAndVec, shutdownImagesDirAndVec
 		};
-		DirAndVector malwareDirAndVec = {
-			malwareDir,
-			&malwareFiles
+		vector<ExtensionsAndVector> extensionsAndVectors = {
+			openableExtensionsAndVec, winampExtensionAndVec, musicExtensionsAndVec, themeExtensionAndVec
 		};
-		DirAndVector bootImagesDirAndVec = {
-			bootImagesDir,
-			&bootImageFiles
-		};
-		DirAndVector shutdownImagesDirAndVec = {
-			shutdownImagesDir,
-			&shutdownImagesFiles
-		};
-		ExtensionsAndVector openableExtensionsAndVec = {
-			&openableExtensions,
-			&openableFiles
-		};
-		ExtensionsAndVector musicExtensionsAndVec = {
-			&musicExtensions,
-			&musicFiles
-		};
-		ExtensionsAndVector themeExtensionAndVec = {
-			&themeExtension,
-			&themeFiles
-		};
-		ExtensionsAndVector winampExtensionAndVec = {
-			&winampExtension,
-			&winampSkinFiles
-		};
-		vector<DirAndVector> dirsAndVectors = { wallDirAndVec, malwareDirAndVec, bootImagesDirAndVec, shutdownImagesDirAndVec };
-		vector<ExtensionsAndVector> extensionsAndVectors = { openableExtensionsAndVec, winampExtensionAndVec, musicExtensionsAndVec, themeExtensionAndVec };
 		_listFiles("C:", dirsAndVectors, extensionsAndVectors);
-		
+
 		activeSoundPack = "default";
 
-		vector<string> bmpExtension = { ".bmp" };
+		vector<string> bmpExtension = {".bmp"};
 		wallpaperFiles = FileHelper::filterFiles(wallpaperFiles, bmpExtension);
 
 		// Configuring openable files so we may access them randomly later
@@ -361,7 +336,7 @@ namespace Utils {
 	// Private
 
 	void FileUtil::_listFiles(
-		const string& directory,
+		const string &directory,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
@@ -381,9 +356,9 @@ namespace Utils {
 			string fullPath = StringHelper::toLowercase(directory + "\\" + fileOrDirectory);
 
 			if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				_listFiles(fullPath, dirsAndVectors, extensionsAndVectors);  // Recurse into the subdirectory
+				_listFiles(fullPath, dirsAndVectors, extensionsAndVectors); // Recurse into the subdirectory
 			} else {
-				files.push_back(fullPath);  // Collect the file path
+				files.push_back(fullPath); // Collect the file path
 				_addToOpenableOptions(fullPath, dirsAndVectors, extensionsAndVectors);
 			}
 		} while (FindNextFile(hFind, &findFileData) != 0 && files.size() <= MAX_FILE_VEC_SIZE);
@@ -392,19 +367,20 @@ namespace Utils {
 	}
 
 	void FileUtil::_addToOpenableOptions(
-		string& fullPath,
+		string &fullPath,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
-		for (auto& dirAndVec : dirsAndVectors) {
-			if (boost::algorithm::istarts_with(fullPath, dirAndVec.dir) && FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
+		for (auto &dirAndVec : dirsAndVectors) {
+			if (boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
+					FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
 				dirAndVec.vec->push_back(fullPath);
 				return;
 			}
 		}
-		for (auto& extensionsAndVec : extensionsAndVectors) {
+		for (auto &extensionsAndVec : extensionsAndVectors) {
 			auto extensions = *extensionsAndVec.extensions;
-			for (auto& extension : extensions) {
+			for (auto &extension : extensions) {
 				if (boost::algorithm::iends_with(fullPath, extension)) {
 					extensionsAndVec.vec->push_back(fullPath);
 					return;
@@ -426,11 +402,12 @@ namespace Utils {
 
 	string FileUtil::_getFullPath(string dir, regex pattern) {
 		smatch match;
-		if (regex_search(dir, match, pattern)) return StringHelper::toLowercase(dir);
+		if (regex_search(dir, match, pattern))
+			return StringHelper::toLowercase(dir);
 		return StringHelper::toLowercase(workingDirectory + "\\" + dir);
 	}
 
-  tuple<string, int> FileUtil::_getRandomFile(std::vector<std::string> files, bool isDefaultFiles) {
+	tuple<string, int> FileUtil::_getRandomFile(std::vector<std::string> files, bool isDefaultFiles) {
 		int randomNumber = IndexHelper::getRandomIndex(files);
 		string randomFile = files[randomNumber];
 		if (isDefaultFiles) {
@@ -440,7 +417,7 @@ namespace Utils {
 			}
 		}
 		return make_tuple(randomFile, randomNumber);
-  }
+	}
 
 	void FileUtil::openFile(string file) {
 		LPCSTR lpFile = file.c_str();
@@ -468,18 +445,20 @@ namespace Utils {
 		}
 	}
 
-	void FileUtil::setSoundPack(string pack) {
-		activeSoundPack = pack;
-	}
+	void FileUtil::setSoundPack(string pack) { activeSoundPack = pack; }
 
 	// Public
 
 	string FileUtil::setWallpaper(string currentWallpaper) {
 		int randomNumber = IndexHelper::getRandomIndex(wallpaperFiles);
-		string wallpaperPath =
-			wallpaperFiles[randomNumber] == currentWallpaper ?
-			wallpaperFiles[randomNumber == wallpaperFiles.size() - 1 ? randomNumber - 1 : randomNumber + 1] : wallpaperFiles[randomNumber];
-		BOOL result = SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (PVOID)wallpaperPath.c_str(), SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+		string wallpaperPath = wallpaperFiles[randomNumber] == currentWallpaper
+			? wallpaperFiles
+					[randomNumber == wallpaperFiles.size() - 1 ? randomNumber - 1 : randomNumber + 1]
+			: wallpaperFiles[randomNumber];
+		BOOL result = SystemParametersInfo(
+			SPI_SETDESKWALLPAPER, 0, (PVOID)wallpaperPath.c_str(),
+			SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
+		);
 		if (!result) {
 			throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
 		}
@@ -492,16 +471,17 @@ namespace Utils {
 		int randomNumber = get<1>(randomFileAndNumber);
 		bool deletionOk = DeleteFile(randomFile.c_str());
 		files.erase(files.begin() + randomNumber);
-		for (auto& [key, val] : _mapOfOpenableOptions) {
+		for (auto &[key, val] : _mapOfOpenableOptions) {
 			auto newVal = *val;
-			newVal.erase(remove_if(
-				newVal.begin(), newVal.end(),
-				[&randomFile](const string& x) {
-					return x == randomFile;
-				}
-			), newVal.end());
+			newVal.erase(
+				remove_if(
+					newVal.begin(), newVal.end(), [&randomFile](const string &x) { return x == randomFile; }
+				),
+				newVal.end()
+			);
 		}
-		if (!deletionOk) randomFile = deleteRandomFile();
+		if (!deletionOk)
+			randomFile = deleteRandomFile();
 		return randomFile;
 	}
 
@@ -518,7 +498,8 @@ namespace Utils {
 
 		do {
 			const string fileOrDirectory = findFileData.cFileName;
-			if (fileOrDirectory == "." || fileOrDirectory == ".." || fileOrDirectory.ends_with(activeSoundPack)) {
+			if (fileOrDirectory == "." || fileOrDirectory == ".." ||
+					fileOrDirectory.ends_with(activeSoundPack)) {
 				continue;
 			}
 			string fullPath = soundsDir + "\\" + fileOrDirectory;
@@ -533,15 +514,17 @@ namespace Utils {
 
 	string FileUtil::openRandomFile(optional<string> type, int retries) {
 		string typeName = type.value_or("default");
-		if (!_mapOfOpenableOptions.count(typeName)) throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+		if (!_mapOfOpenableOptions.count(typeName))
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
-		if (filesToOpen.size() == 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+		if (filesToOpen.size() == 0)
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen, typeName == "default");
 		string randomFile = get<0>(randomFileAndNumber);
 		int randomNumber = get<1>(randomFileAndNumber);
 		try {
 			openFile(randomFile);
-		} catch (InteractBoxException& e) {
+		} catch (InteractBoxException &e) {
 			if (retries < 2) {
 				retries++;
 				filesToOpen.erase(filesToOpen.begin() + randomNumber);
@@ -553,15 +536,17 @@ namespace Utils {
 		return randomFile;
 	}
 
-  string FileUtil::selectRandomFile(optional<string> type, int retries) {
-    string typeName = type.value_or("default");
-		if (!_mapOfOpenableOptions.count(typeName)) throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+	string FileUtil::selectRandomFile(optional<string> type, int retries) {
+		string typeName = type.value_or("default");
+		if (!_mapOfOpenableOptions.count(typeName))
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
-		if (filesToOpen.size() == 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+		if (filesToOpen.size() == 0)
+			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen);
 		string randomFile = get<0>(randomFileAndNumber);
 		return randomFile;
-  }
+	}
 
 	string FileUtil::getRandomMalware() {
 		int randomNumber = IndexHelper::getRandomIndex(malwareFiles);
@@ -578,5 +563,5 @@ namespace Utils {
 		}
 		return randomFile;
 	}
-	#endif
+#endif
 } // namespace Utils

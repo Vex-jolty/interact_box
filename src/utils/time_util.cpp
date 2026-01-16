@@ -5,7 +5,7 @@ namespace Utils {
 	string TimeUtil::getAndFormatCurrentTime(string format) {
 		time_t now = time(0);
 		char buffer[90];
-    struct tm* timeInfo = localtime(&now);
+		struct tm *timeInfo = localtime(&now);
 		strftime(buffer, sizeof(buffer), format.c_str(), timeInfo);
 		return buffer;
 	}
@@ -20,6 +20,7 @@ namespace Utils {
 		sysTime.wMinute = 0;
 		sysTime.wSecond = 1;
 		WINBOOL success = SetSystemTime(&sysTime);
-		if (!success) throw InteractBoxException(ErrorCodes::CannotSetSystemDateTime);
+		if (!success)
+			throw InteractBoxException(ErrorCodes::CannotSetSystemDateTime);
 	}
-}
+} // namespace Utils
