@@ -10,8 +10,6 @@ namespace Utils {
 		vector<wstring> musicExtensions
 	) {
 		workingDirectory = StringHelper::toLowercase(FileHelper::getWorkingDirectory());
-
-		// Getting Windows directory
 		windowsDir = FileHelper::getWindowsDirectory();
 
 		wregex diskPattern(LR"([A-Za-z]:)");
@@ -42,8 +40,6 @@ namespace Utils {
 		_mapOfOpenableOptions[L"winamp"] = &winampSkinFiles;
 		_mapOfOpenableOptions[L"theme"] = &themeFiles;
 	}
-
-	// Private
 
 	void FileUtil::_listFiles(
 		const wstring &directory,
@@ -139,7 +135,6 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		// Number under 32 indicates an error. If it happens, throw exception
 		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
 		}
@@ -152,15 +147,12 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		// Number under 32 indicates an error. If it happens, throw exception
 		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
 		}
 	}
 
 	void FileUtil::setSoundPack(wstring pack) { activeSoundPack = pack; }
-
-	// Public
 
 	wstring FileUtil::setWallpaper(wstring currentWallpaper) {
 		int randomNumber = IndexHelper::getRandomIndex(wallpaperFiles);
@@ -286,11 +278,8 @@ namespace Utils {
 		vector<string> musicExtensions
 	) {
 		workingDirectory = StringHelper::toLowercase(FileHelper::getWorkingDirectory());
-
-		// Getting Windows directory
 		windowsDir = FileHelper::getWindowsDirectory();
 
-		// Getting full path to all directories
 		regex diskPattern(R"([A-Za-z]:\s)");
 		wallDir = _getFullPath(wallDir, diskPattern);
 		malwareDir = _getFullPath(malwareDir, diskPattern);
@@ -300,7 +289,6 @@ namespace Utils {
 		vector<string> themeExtension = {".theme"};
 		vector<string> winampExtension = {".wsz"};
 
-		// Grouping directories and extensions
 		DirAndVector wallDirAndVec = {wallDir, &wallpaperFiles};
 		DirAndVector malwareDirAndVec = {malwareDir, &malwareFiles};
 		DirAndVector bootImagesDirAndVec = {bootImagesDir, &bootImageFiles};
@@ -322,7 +310,6 @@ namespace Utils {
 		vector<string> bmpExtension = {".bmp"};
 		wallpaperFiles = FileHelper::filterFiles(wallpaperFiles, bmpExtension);
 
-		// Configuring openable files so we may access them randomly later
 		_mapOfOpenableOptions["default"] = &openableFiles;
 		_mapOfOpenableOptions["malware"] = &malwareFiles;
 		_mapOfOpenableOptions["music"] = &musicFiles;
@@ -332,8 +319,6 @@ namespace Utils {
 		_mapOfOpenableOptions["boot"] = &bootImageFiles;
 		_mapOfOpenableOptions["shutdown"] = &shutdownImagesFiles;
 	}
-
-	// Private
 
 	void FileUtil::_listFiles(
 		const string &directory,
@@ -426,8 +411,7 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		// Number under 32 indicates an error. If it happens, throw exception
-		if ((int)hInstance < 32) {
+		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
 		}
 	}
@@ -439,15 +423,12 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		// Number under 32 indicates an error. If it happens, throw exception
-		if ((int)hInstance < 32) {
+		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
 			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
 		}
 	}
 
 	void FileUtil::setSoundPack(string pack) { activeSoundPack = pack; }
-
-	// Public
 
 	string FileUtil::setWallpaper(string currentWallpaper) {
 		int randomNumber = IndexHelper::getRandomIndex(wallpaperFiles);
