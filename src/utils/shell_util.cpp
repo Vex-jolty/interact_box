@@ -1,5 +1,4 @@
 #include "utils/shell_util.hpp"
-#include "shell_util.hpp"
 
 namespace Utils {
 	using namespace std;

@@ -3,7 +3,7 @@
 namespace Server {
 	using namespace std;
 	WebServer::WebServer(
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		wstring host,
 #else
 		string host,

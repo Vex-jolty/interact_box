@@ -32,7 +32,7 @@ namespace Server {
 	class WebServer {
 		public:
 			WebServer(
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 				std::wstring host,
 #else
 				std::string host,
@@ -50,7 +50,7 @@ namespace Server {
 			std::atomic<bool> abortNow;
 
 		private:
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring _serverHost;
 #else
 			std::string _serverHost;
