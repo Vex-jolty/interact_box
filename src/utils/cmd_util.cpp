@@ -5,17 +5,18 @@ namespace Utils {
 
 	void CmdUtil::executeDosCommand(string command, string malwareDir, bool warnAboutUrlsInTerminal) {
 		/** cSpell:disable */
+#ifdef WIN32
 		if (!boost::iends_with(command, ";pause"))
 			command += ";pause";
 
 		malwareDir = StringHelper::toLowercase(malwareDir);
 		_checkIfCommandIsValid(command, malwareDir);
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		wstring tempDir = L"C:\\WINDOWS\\TEMP";
-#else
+	#else
 		string tempDir = "C:\\WINDOWS\\TEMP";
-#endif
+	#endif
 
 		size_t pos = command.find(';');
 		while (pos != wstring::npos) {
@@ -26,16 +27,16 @@ namespace Utils {
 			}
 			pos = command.find(';', pos + 1);
 		}
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		wstring currentTime =
 			StringHelper::stringToWideString(TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M"));
 		wstring tempFile = L"CHAT-" + currentTime + L".BAT";
 		wstring fullTempFilePath = tempDir + L"\\" + tempFile;
-#else
+	#else
 		string currentTime = TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M");
 		string tempFile = "CHAT-" + currentTime + ".BAT";
 		string fullTempFilePath = tempDir + "\\" + tempFile;
-#endif
+	#endif
 		FileHelper::deleteFile(fullTempFilePath);
 		HANDLE fileHandle = FileHelper::makeFile(fullTempFilePath, true);
 		FileHelper::writeToFile(fileHandle, command);
@@ -45,7 +46,7 @@ namespace Utils {
 			vector<string> regexResults;
 			bool hasUrl = _checkIfHasUrl(command, regexResults);
 			if (hasUrl) {
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 				int regexResultsSize = regexResults.size();
 				string warningCommand =
 					"@echo off\r\necho A command was sent containing the following URLs:\r\n";
@@ -71,7 +72,7 @@ namespace Utils {
 				FileHelper::closeFile(warningFileHandle);
 				ShellUtil::openShell(warningFileName, L"open", tempDir);
 
-#else
+	#else
 				int regexResultsSize = regexResults.size();
 				string warningCommand = "@echo off\r\necho A command was sent containing ";
 				warningCommand +=
@@ -94,35 +95,48 @@ namespace Utils {
 				FileHelper::closeFile(warningFileHandle);
 				ShellUtil::openShell("COMMAND.COM", "open", nullopt, "/K " + warningFilePath);
 
-#endif
+	#endif
 				ProcessHelper::setToForeground(warningFileName);
 				return;
 			}
 		}
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		ShellUtil::openShell(tempFile, L"open", tempDir);
-#else
+	#else
 		ShellUtil::openShell("COMMAND.COM", "open", nullopt, "/K " + fullTempFilePath);
-#endif
+	#endif
 		ProcessHelper::setToForeground(tempFile);
+#else
+		string tempDir = "/tmp";
+		string currentTime = TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M");
+		string tempFile = "chat-" + currentTime + ".BAT";
+		string fullTempFilePath = tempDir + "/" + tempFile;
+
+		malwareDir = StringHelper::toLowercase(malwareDir);
+		_checkIfCommandIsValid(command, malwareDir);
+#endif
 	}
 
 	void CmdUtil::_checkIfCommandIsValid(string command, string malwareDir) {
 		map<string, ErrorCodes::ErrorCode> invalidCommandsAndErrors = {
+#ifdef WIN32
 			{"deltree", ErrorCodes::DelTreeCommand},
 			{"del", ErrorCodes::DelCommand},
 			{"erase", ErrorCodes::EraseCommand},
+#else
+			{"rm", ErrorCodes::DelCommand},
+#endif
 			{"trivia_game", ErrorCodes::TriviaGameCommand}
 		};
-		for (auto &[key, val] : invalidCommandsAndErrors) {
+		for (auto& [key, val] : invalidCommandsAndErrors) {
 			if (boost::istarts_with(command, key) || boost::istarts_with(command, "@echo off;" + key)) {
 				throw InteractBoxException(val);
 			}
 		}
 
 		_checkIfHasBannedPath(command, malwareDir, ErrorCodes::MalwareCommand);
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		_checkIfHasBannedPath(
 			command, FileHelper::getWorkingDirectoryAsString(), ErrorCodes::IllegalDirectoryManipulation
 		);
@@ -133,7 +147,7 @@ namespace Utils {
 #endif
 	}
 
-	bool CmdUtil::_checkIfHasUrl(string command, vector<string> &out) {
+	bool CmdUtil::_checkIfHasUrl(string command, vector<string>& out) {
 		regex urlPattern(
 			R"((?:http|https|ftp)://(?:[\w-]+(?:\.[\w-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)"
 		);

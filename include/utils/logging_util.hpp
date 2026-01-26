@@ -7,7 +7,7 @@
 namespace Utils {
 	class LoggingUtil {
 		public:
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			LoggingUtil(std::wstring fileName, LoggingLevel loggingLevel);
 			std::wstring getFileName();
 #else
@@ -22,13 +22,17 @@ namespace Utils {
 			void stopLogging();
 
 		private:
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring _fileName;
 #else
 			std::string _fileName;
 #endif
-			std::streambuf *_streamBuffer;
+			std::streambuf* _streamBuffer;
+#ifdef WIN32
 			HANDLE _fileHandle;
+#else
+			std::ofstream _fileHandle;
+#endif
 			LoggingLevel _loggingLevel;
 			std::string getLevelString(LoggingLevel level);
 	};

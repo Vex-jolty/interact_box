@@ -3,6 +3,7 @@ build*/
 banned_words.txt
 *.png
 questions.json
+questions.h
 audio/
 sounds/*
 !sounds/default_pack/

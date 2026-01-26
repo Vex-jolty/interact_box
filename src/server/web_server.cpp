@@ -21,7 +21,7 @@ namespace Server {
 		_errorHandler = move(errorHandler);
 	}
 
-	void WebServer::sendHttpResponse(const string &response) {
+	void WebServer::sendHttpResponse(const string& response) {
 		send(_clientSocket, response.c_str(), response.size(), 0);
 	}
 
@@ -29,26 +29,24 @@ namespace Server {
 		sockaddr_in clientAddr;
 		int clientAddrSize = sizeof(clientAddr);
 
-		if (getpeername(_clientSocket, (sockaddr *)&clientAddr, &clientAddrSize) == 0) {
+		if (getpeername(_clientSocket, (sockaddr*)&clientAddr, &clientAddrSize) == 0) {
 			return inet_ntoa(clientAddr.sin_addr);
 		} else {
 			return "UNKNOWN";
 		}
 	}
 
-	void *WebServer::handleRequest(void *arg) {
-		WebServerAndRequest *webServerAndRequest = static_cast<WebServerAndRequest *>(arg);
-		Http::HttpRequest *request = webServerAndRequest->request;
-		WebServer *server = webServerAndRequest->server;
+	void* WebServer::handleRequest(void* arg) {
+		WebServerAndRequest* webServerAndRequest = static_cast<WebServerAndRequest*>(arg);
+		Http::HttpRequest* request = webServerAndRequest->request;
+		WebServer* server = webServerAndRequest->server;
 		Http::HttpResponse response = Http::HttpResponse();
 		try {
-			// Match route to existing route list
 			auto iter =
-				find_if(server->_routes.begin(), server->_routes.end(), [&request](Http::HttpRoute &route) {
+				find_if(server->_routes.begin(), server->_routes.end(), [&request](Http::HttpRoute& route) {
 					return boost::algorithm::iequals(request->route, route.getPath()) &&
 						boost::algorithm::iequals(request->method, route.getMethod());
 				});
-			// Throw 404 if not found
 			if (iter == server->_routes.end())
 				throw HttpStatus::NotFound;
 
@@ -57,13 +55,13 @@ namespace Server {
 			if (request->route == "/abort") {
 				webServerAndRequest->server->serverAbort();
 			}
-		} catch (string &e) {
+		} catch (string& e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e, HttpStatus::InternalServerError);
-		} catch (string *e) {
+		} catch (string* e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, *e, HttpStatus::InternalServerError);
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			server->_errorHandler->handleError(e);
 			HttpStatus::Code status;
 			if (boost::icontains(e.what(), "route is disabled")) {
@@ -74,7 +72,7 @@ namespace Server {
 				status = HttpStatus::InternalServerError;
 			}
 			response.setResponse(nullopt, e.what(), status);
-		} catch (InteractBoxException *e) {
+		} catch (InteractBoxException* e) {
 			server->_errorHandler->handleError(e);
 			HttpStatus::Code status;
 			if (boost::icontains(e->what(), "route is disabled")) {
@@ -85,19 +83,19 @@ namespace Server {
 				status = HttpStatus::InternalServerError;
 			}
 			response.setResponse(nullopt, e->what(), status);
-		} catch (Json::Exception &e) {
+		} catch (Json::Exception& e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e.what(), HttpStatus::BadRequest);
-		} catch (Json::Exception *e) {
+		} catch (Json::Exception* e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e->what(), HttpStatus::BadRequest);
-		} catch (exception &e) {
+		} catch (exception& e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e.what(), HttpStatus::InternalServerError);
-		} catch (exception *e) {
+		} catch (exception* e) {
 			server->_errorHandler->handleError(e);
 			response.setResponse(nullopt, e->what(), HttpStatus::InternalServerError);
-		} catch (HttpStatus::Code &c) {
+		} catch (HttpStatus::Code& c) {
 			server->_errorHandler->handleError(c, request->route);
 			response.setResponse(nullopt, HttpStatus::reasonPhrase(c), c);
 		}
@@ -129,7 +127,7 @@ namespace Server {
 #else
 		serverAddr.sin_addr.s_addr = inet_addr(_serverHost.c_str());
 #endif
-		if (bind(_listeningSocket, (sockaddr *)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+		if (bind(_listeningSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
 			closesocket(_listeningSocket);
 			WSACleanup();
 			throw InteractBoxException(ErrorCodes::CannotBindToSocket);
@@ -144,7 +142,7 @@ namespace Server {
 		_loggingUtil->debug("Server is listening on port " + _port);
 
 		do {
-			_clientSocket = accept(_listeningSocket, (sockaddr *)&clientAddr, &clientAddrSize);
+			_clientSocket = accept(_listeningSocket, (sockaddr*)&clientAddr, &clientAddrSize);
 			if (_clientSocket == INVALID_SOCKET) {
 				_loggingUtil->err("Invalid client socket");
 				break;
@@ -158,13 +156,11 @@ namespace Server {
 				_loggingUtil->info(requestContent);
 				_loggingUtil->info("Client IP: " + ipAddress);
 				pthread_t serverThread;
-				Http::HttpRequest *request = new Http::HttpRequest(requestContent);
+				Http::HttpRequest* request = new Http::HttpRequest(requestContent);
 				WebServerAndRequest webServerAndRequest{this, request};
 				// Running the logic in a thread to prevent blocking, but joining to allow requests to
 				// execute in order
-				pthread_create(
-					&serverThread, NULL, &WebServer::handleRequest, (void *)&webServerAndRequest
-				);
+				pthread_create(&serverThread, NULL, &WebServer::handleRequest, (void*)&webServerAndRequest);
 				pthread_join(serverThread, NULL);
 			}
 			closesocket(_clientSocket);
@@ -183,7 +179,7 @@ namespace Server {
 	void WebServer::addRoute(Http::HttpRoute route) { _routes.push_back(route); }
 
 	void WebServer::addRoutes(vector<Http::HttpRoute> routes) {
-		for (auto &route : routes) {
+		for (auto& route : routes) {
 			addRoute(route);
 		}
 	}

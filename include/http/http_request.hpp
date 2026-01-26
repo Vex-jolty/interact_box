@@ -2,10 +2,10 @@
 #ifndef _GLIBCXX_STRING
 	#include <string>
 #endif
-#ifndef _WINSOCK2API_
+#ifdef WIN32
 	#include <winsock2.h>
 #endif
-#ifndef _WS2TCPIP_H_
+#ifdef WIN32
 	#include <ws2tcpip.h>
 #endif
 #include <regex>

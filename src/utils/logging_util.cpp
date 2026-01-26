@@ -3,7 +3,7 @@
 namespace Utils {
 	using namespace std;
 	LoggingUtil::LoggingUtil(
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		wstring fileName,
 #else
 		string fileName,
@@ -12,15 +12,18 @@ namespace Utils {
 	) {
 		bool fileExists = FileHelper::checkIfFileExists(fileName);
 		_fileHandle = FileHelper::makeFile(fileName, !fileExists);
+#ifdef __linux__
+		_fileHandle.close();
+#endif
 		_fileName = fileName;
 		_loggingLevel = loggingLevel;
 		string initialMessage = "Current logging level is " + getLevelString(_loggingLevel) +
 			". Launch with --loggingLevel <desired level> to alter this.";
 		initialMessage += "\r\nPossible logging levels: debug, info, err, warn\r\n";
-		FileHelper::writeToFile(_fileHandle, initialMessage);
+		FileHelper::writeToFile(_fileName, initialMessage);
 	}
 
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 	wstring LoggingUtil::getFileName() {
 #else
 	string LoggingUtil::getFileName() {
@@ -38,7 +41,7 @@ namespace Utils {
 
 		if (!content.ends_with("\r\n"))
 			content += "\r\n";
-		FileHelper::writeToFile(_fileHandle, levelString + " " + dateTimeString + " " + content);
+		FileHelper::writeToFile(_fileName, levelString + " " + dateTimeString + " " + content);
 	}
 
 	void LoggingUtil::info(string content) { log(content, LoggingLevel::INFO); }
@@ -49,7 +52,11 @@ namespace Utils {
 
 	void LoggingUtil::err(string content) { log(content, LoggingLevel::ERR); }
 
-	void LoggingUtil::stopLogging() { FileHelper::closeFile(_fileHandle); }
+	void LoggingUtil::stopLogging() {
+#ifdef WIN32
+		FileHelper::closeFile(_fileHandle);
+#endif
+	}
 	string LoggingUtil::getLevelString(LoggingLevel level) {
 		switch (level) {
 			case INFO:

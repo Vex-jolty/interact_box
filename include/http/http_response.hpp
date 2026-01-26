@@ -8,7 +8,7 @@
 #ifndef _GLIBCXX_OPTIONAL
 	#include <optional>
 #endif
-#ifndef _WINSOCK2API_
+#ifdef WIN32
 	#include <winsock2.h>
 #endif
 #include "http_status_codes.h"

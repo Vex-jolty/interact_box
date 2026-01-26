@@ -28,7 +28,7 @@ namespace Utils {
 			bool getWarnAboutUrlsInTerminal();
 			bool getUseBootAndShutdownImages();
 			bool getUseSystemBox();
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring getHost();
 			std::wstring getWallpaperDir();
 			std::wstring getMalwareDir();
@@ -46,7 +46,7 @@ namespace Utils {
 			LoggingLevel getLoggingLevel();
 
 		private:
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring _host;
 #else
 			std::string _host;
@@ -73,7 +73,7 @@ namespace Utils {
 			bool _useTts;
 			bool _useColors;
 			bool _warnAboutUrlsInTerminal;
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring _wallpaperDir;
 			std::wstring _malwareDir;
 			std::vector<std::wstring> _musicExtensions;

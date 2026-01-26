@@ -8,13 +8,13 @@
 
 namespace Threads {
 	struct ThreadData {
-		HINSTANCE hInstance;
-		Server::WebServer *server;
-		HWND *hwndPtr;
+			HINSTANCE hInstance;
+			Server::WebServer* server;
+			HWND* hwndPtr;
 	};
 	class TrayThread {
 		public:
-			static void *trayIconThread(void *arg);
+			static void* trayIconThread(void* arg);
 
 		private:
 			static LRESULT CALLBACK windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

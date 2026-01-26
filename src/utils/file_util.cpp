@@ -2,7 +2,8 @@
 
 namespace Utils {
 	using namespace std;
-#if WINVER > _WIN32_WINNT_NT4
+#ifdef WIN32
+	#if WINVER > _WIN32_WINNT_NT4
 	FileUtil::FileUtil(
 		wstring wallDir,
 		wstring malwareDir,
@@ -42,7 +43,7 @@ namespace Utils {
 	}
 
 	void FileUtil::_listFiles(
-		const wstring &directory,
+		const wstring& directory,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
@@ -72,7 +73,7 @@ namespace Utils {
 	}
 
 	void FileUtil::_addToOpenableOptions(
-		wstring &fullPath,
+		wstring& fullPath,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
@@ -81,15 +82,15 @@ namespace Utils {
 			return;
 		if (attributes & FILE_ATTRIBUTE_DIRECTORY)
 			return;
-		for (auto &dirAndVec : dirsAndVectors) {
+		for (auto& dirAndVec : dirsAndVectors) {
 			if (FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
 				dirAndVec.vec->push_back(fullPath);
 				break;
 			}
 		}
-		for (auto &extensionsAndVec : extensionsAndVectors) {
+		for (auto& extensionsAndVec : extensionsAndVectors) {
 			auto extensions = *extensionsAndVec.extensions;
-			for (auto &extension : extensions) {
+			for (auto& extension : extensions) {
 				if (boost::iends_with(fullPath, extension)) {
 					extensionsAndVec.vec->push_back(fullPath);
 					break;
@@ -182,11 +183,11 @@ namespace Utils {
 		}
 		bool deletionOk = DeleteFile(randomFile.c_str());
 		files.erase(files.begin() + randomNumber);
-		for (auto &[key, val] : _mapOfOpenableOptions) {
+		for (auto& [key, val] : _mapOfOpenableOptions) {
 			auto rawVal = *val;
 			rawVal.erase(
 				remove_if(
-					rawVal.begin(), rawVal.end(), [&randomFile](const wstring &x) { return x == randomFile; }
+					rawVal.begin(), rawVal.end(), [&randomFile](const wstring& x) { return x == randomFile; }
 				),
 				rawVal.end()
 			);
@@ -232,7 +233,7 @@ namespace Utils {
 		wstring randomFile = filesToOpen[randomNumber];
 		try {
 			openFile(randomFile);
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			if (retries < 2) {
 				retries++;
 				filesToOpen.erase(filesToOpen.begin() + randomNumber);
@@ -268,7 +269,7 @@ namespace Utils {
 		}
 		return randomFile;
 	}
-#else
+	#else
 	FileUtil::FileUtil(
 		string wallDir,
 		string malwareDir,
@@ -321,7 +322,7 @@ namespace Utils {
 	}
 
 	void FileUtil::_listFiles(
-		const string &directory,
+		const string& directory,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
@@ -352,20 +353,20 @@ namespace Utils {
 	}
 
 	void FileUtil::_addToOpenableOptions(
-		string &fullPath,
+		string& fullPath,
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
-		for (auto &dirAndVec : dirsAndVectors) {
+		for (auto& dirAndVec : dirsAndVectors) {
 			if (boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
 					FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
 				dirAndVec.vec->push_back(fullPath);
 				return;
 			}
 		}
-		for (auto &extensionsAndVec : extensionsAndVectors) {
+		for (auto& extensionsAndVec : extensionsAndVectors) {
 			auto extensions = *extensionsAndVec.extensions;
-			for (auto &extension : extensions) {
+			for (auto& extension : extensions) {
 				if (boost::algorithm::iends_with(fullPath, extension)) {
 					extensionsAndVec.vec->push_back(fullPath);
 					return;
@@ -452,11 +453,11 @@ namespace Utils {
 		int randomNumber = get<1>(randomFileAndNumber);
 		bool deletionOk = DeleteFile(randomFile.c_str());
 		files.erase(files.begin() + randomNumber);
-		for (auto &[key, val] : _mapOfOpenableOptions) {
+		for (auto& [key, val] : _mapOfOpenableOptions) {
 			auto newVal = *val;
 			newVal.erase(
 				remove_if(
-					newVal.begin(), newVal.end(), [&randomFile](const string &x) { return x == randomFile; }
+					newVal.begin(), newVal.end(), [&randomFile](const string& x) { return x == randomFile; }
 				),
 				newVal.end()
 			);
@@ -505,7 +506,7 @@ namespace Utils {
 		int randomNumber = get<1>(randomFileAndNumber);
 		try {
 			openFile(randomFile);
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			if (retries < 2) {
 				retries++;
 				filesToOpen.erase(filesToOpen.begin() + randomNumber);
@@ -544,5 +545,6 @@ namespace Utils {
 		}
 		return randomFile;
 	}
+	#endif
 #endif
 } // namespace Utils

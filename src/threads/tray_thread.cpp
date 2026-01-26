@@ -5,7 +5,7 @@ namespace Threads {
 	using namespace Server;
 	using namespace std;
 	LRESULT CALLBACK TrayThread::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-		WebServer *server = reinterpret_cast<WebServer *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+		WebServer* server = reinterpret_cast<WebServer*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 		int exitId = 1;
 		int settingsId = 2;
 
@@ -117,7 +117,7 @@ namespace Threads {
 		try {
 			Utils::ShellUtil::openShell(settingsPath, L"open", workingDir);
 			ProcessHelper::setToForeground(settingsPath);
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			Utils::MessageBoxUtil::createBox(
 				L"ERROR", StringHelper::stringToWideString(e.what()), L"e", L"ok"
 			);
@@ -127,14 +127,14 @@ namespace Threads {
 		try {
 			Utils::ShellUtil::openShell(settingsPath, "open", workingDir);
 			ProcessHelper::setToForeground(settingsPath);
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			Utils::MessageBoxUtil::createBox("ERROR", e.what(), "e", "ok");
 		}
 #endif
 	}
 
-	void *TrayThread::trayIconThread(void *arg) {
-		ThreadData *threadData = static_cast<ThreadData *>(arg);
+	void* TrayThread::trayIconThread(void* arg) {
+		ThreadData* threadData = static_cast<ThreadData*>(arg);
 #if WINVER > _WIN32_WINNT_NT4
 		const wchar_t CLASS_NAME[] = L"HiddenWindowClass";
 #else

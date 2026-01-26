@@ -8,19 +8,19 @@ namespace Utils {
 	struct DirAndVector {
 #if WINVER > _WIN32_WINNT_NT4
 			std::wstring dir;
-			std::vector<std::wstring> *vec;
+			std::vector<std::wstring>* vec;
 #else
 			std::string dir;
-			std::vector<std::string> *vec;
+			std::vector<std::string>* vec;
 #endif
 	};
 	struct ExtensionsAndVector {
 #if WINVER > _WIN32_WINNT_NT4
-			std::vector<std::wstring> *extensions;
-			std::vector<std::wstring> *vec;
+			std::vector<std::wstring>* extensions;
+			std::vector<std::wstring>* vec;
 #else
-			std::vector<std::string> *extensions;
-			std::vector<std::string> *vec;
+			std::vector<std::string>* extensions;
+			std::vector<std::string>* vec;
 #endif
 	};
 	class FileUtil {
@@ -92,26 +92,26 @@ namespace Utils {
 		private:
 #if WINVER > _WIN32_WINNT_NT4
 			std::wstring activeSoundPack;
-			std::map<std::wstring, std::vector<std::wstring> *> _mapOfOpenableOptions;
+			std::map<std::wstring, std::vector<std::wstring>*> _mapOfOpenableOptions;
 #else
 			std::string activeSoundPack;
-			std::map<std::string, std::vector<std::string> *> _mapOfOpenableOptions;
+			std::map<std::string, std::vector<std::string>*> _mapOfOpenableOptions;
 #endif
 
 			void _listFiles(
 #if WINVER > _WIN32_WINNT_NT4
-				const std::wstring &directory,
+				const std::wstring& directory,
 #else
-				const std::string &directory,
+				const std::string& directory,
 #endif
 				std::vector<DirAndVector> dirsAndVectors,
 				std::vector<ExtensionsAndVector> extensionsAndVectors
 			);
 			void _addToOpenableOptions(
 #if WINVER > _WIN32_WINNT_NT4
-				std::wstring &fullPath,
+				std::wstring& fullPath,
 #else
-				std::string &fullPath,
+				std::string& fullPath,
 #endif
 				std::vector<DirAndVector> dirsAndVectors,
 				std::vector<ExtensionsAndVector> extensionsAndVectors

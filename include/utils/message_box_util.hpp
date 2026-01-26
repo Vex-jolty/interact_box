@@ -4,7 +4,7 @@
 
 namespace Utils {
 	class MessageBoxUtil {
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		public:
 			static void createBox(
 				std::wstring title,

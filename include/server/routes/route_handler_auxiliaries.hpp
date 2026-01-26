@@ -5,19 +5,19 @@
 
 namespace Server::Routes {
 	struct FileAndDate {
-		std::string file;
-		std::string date;
+			std::string file;
+			std::string date;
 	};
 
 	struct ThemeArgs {
-		std::shared_ptr<Utils::FileUtil> fileUtil;
-		std::shared_ptr<Utils::LoggingUtil> loggingUtil;
+			std::shared_ptr<Utils::FileUtil> fileUtil;
+			std::shared_ptr<Utils::LoggingUtil> loggingUtil;
 #if WINVER > _WIN32_WINNT_NT4
-		std::wstring randomFile;
+			std::wstring randomFile;
 #else
-		std::string randomFile;
+			std::string randomFile;
 #endif
-		pthread_mutex_t *themeMutex;
+			pthread_mutex_t* themeMutex;
 	};
 
 	struct BaseDataItem {
@@ -30,7 +30,7 @@ namespace Server::Routes {
 	};
 
 	BOOL CALLBACK getOkButton(HWND hwnd, LPARAM lParam);
-	void *runThemeThread(void *arg);
+	void* runThemeThread(void* arg);
 #if WINVER > _WIN32_WINNT_NT4
 	void setSoundsFromJson(
 		Json::Value jsonData,

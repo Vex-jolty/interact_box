@@ -5,7 +5,7 @@ namespace Server::Routes {
 
 #if WINVER > _WIN32_WINNT_NT4
 	void setSoundsFromJson(Json::Value jsonData, wstring packDir, vector<wstring> keys) {
-		for (auto &key : keys) {
+		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[StringHelper::wideStringToString(key)];
 			wstring value = StringHelper::stringToWideString(jsonValue.asString());
 			wstring subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
@@ -17,7 +17,7 @@ namespace Server::Routes {
 	}
 
 	void setDefaultSounds(vector<wstring> keys) {
-		for (auto &key : keys) {
+		for (auto& key : keys) {
 			wstring defaultValKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key;
 			wstring value =
 				Utils::RegistryUtil::getKeyValue(HKEY_CURRENT_USER, defaultValKey, L"\\.Default");
@@ -30,7 +30,7 @@ namespace Server::Routes {
 
 #else
 	void setSoundsFromJson(Json::Value jsonData, string packDir, vector<string> keys) {
-		for (auto &key : keys) {
+		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[key];
 			string value = jsonValue.asString();
 			string subKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key + "\\.Current";
@@ -42,7 +42,7 @@ namespace Server::Routes {
 	}
 
 	void setDefaultSounds(vector<string> keys) {
-		for (auto &key : keys) {
+		for (auto& key : keys) {
 			string defaultValKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key;
 			string value =
 				Utils::RegistryUtil::getKeyValue(HKEY_CURRENT_USER, defaultValKey, "\\.Default");
@@ -56,7 +56,7 @@ namespace Server::Routes {
 
 	BOOL CALLBACK getOkButton(HWND hwnd, LPARAM lParam) {
 		try {
-			HWND *okButtonPtr = reinterpret_cast<HWND *>(lParam);
+			HWND* okButtonPtr = reinterpret_cast<HWND*>(lParam);
 #if WINVER > _WIN32_WINNT_NT4
 			wchar_t name[256];
 			wchar_t text[256];
@@ -69,7 +69,7 @@ namespace Server::Routes {
 				}
 			}
 			return TRUE;
-		} catch (exception &e) {
+		} catch (exception& e) {
 			MessageBox(NULL, L"Failed during enumeration", L"", MB_ICONERROR);
 			return TRUE;
 		}
@@ -85,16 +85,16 @@ namespace Server::Routes {
 				}
 			}
 			return TRUE;
-		} catch (exception &e) {
+		} catch (exception& e) {
 			MessageBoxA(NULL, "Failed during enumeration", "", MB_ICONERROR);
 			return TRUE;
 		}
 #endif
 	}
 
-	void *runThemeThread(void *arg) {
+	void* runThemeThread(void* arg) {
 		// Lock to ensure this doesn't cause a race condition
-		ThemeArgs *themeArgs = static_cast<ThemeArgs *>(arg);
+		ThemeArgs* themeArgs = static_cast<ThemeArgs*>(arg);
 		int lockResult = pthread_mutex_lock(themeArgs->themeMutex);
 		shared_ptr<Utils::FileUtil> fileUtil = themeArgs->fileUtil;
 		shared_ptr<Utils::LoggingUtil> loggingUtil = themeArgs->loggingUtil;
@@ -133,7 +133,7 @@ namespace Server::Routes {
 			while (IsWindow(window)) {
 				Sleep(500);
 			}
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			loggingUtil->err(e.what());
 #if WINVER > _WIN32_WINNT_NT4
 			Utils::MessageBoxUtil::createBox(
@@ -142,7 +142,7 @@ namespace Server::Routes {
 #else
 			Utils::MessageBoxUtil::createBox("INTERACT BOX ERROR", e.what(), "e", "ok");
 #endif
-		} catch (exception &e) {
+		} catch (exception& e) {
 			string errMessage = e.what();
 			loggingUtil->err(errMessage);
 #if WINVER > _WIN32_WINNT_NT4

@@ -11,7 +11,18 @@ namespace Utils {
 				std::optional<std::wstring> newKey,
 				std::wstring newValue
 			);
+			static bool setNewKeyValue(
+				HKEY topRegKeyToOpen,
+				std::wstring regKeyNameToOpen,
+				std::optional<std::wstring> newKey,
+				DWORD newValue
+			);
 			static std::wstring getKeyValue(
+				HKEY topRegKeyToOpen,
+				std::wstring regKeyNameToOpen,
+				std::wstring key
+			);
+			static DWORD getKeyValueDWORD(
 				HKEY topRegKeyToOpen,
 				std::wstring regKeyNameToOpen,
 				std::wstring key
@@ -19,7 +30,7 @@ namespace Utils {
 			static std::vector<std::wstring> getListOfKeys(
 				HKEY topRegKeyToOpen,
 				std::wstring regKeyNameToOpen,
-				Utils::LoggingUtil *loggingUtil,
+				Utils::LoggingUtil* loggingUtil,
 				int startIndex = 0
 			);
 #else
@@ -37,7 +48,7 @@ namespace Utils {
 			static std::vector<std::string> getListOfKeys(
 				HKEY topRegKeyToOpen,
 				std::string regKeyNameToOpen,
-				Utils::LoggingUtil *loggingUtil,
+				Utils::LoggingUtil* loggingUtil,
 				int startIndex = 0
 			);
 #endif

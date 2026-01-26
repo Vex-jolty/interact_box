@@ -4,6 +4,7 @@ namespace Utils {
 	using namespace std;
 	/** cSpell:disable */
 	void ResolutionUtil::changeResolution(bool toMaximum) {
+#ifdef WIN32
 		DEVMODE devMode;
 		ZeroMemory(&devMode, sizeof(DEVMODE));
 		devMode.dmSize = sizeof(DEVMODE);
@@ -34,9 +35,11 @@ namespace Utils {
 		if (result != DISP_CHANGE_SUCCESSFUL) {
 			throw InteractBoxException(ErrorCodes::CannotChangeDisplay);
 		}
+#endif
 	}
 
 	void ResolutionUtil::changeColors(int bitsPerPixel) {
+#ifdef WIN32
 		DEVMODE devMode;
 		ZeroMemory(&devMode, sizeof(DEVMODE));
 		vector<int> validValues = {
@@ -56,5 +59,6 @@ namespace Utils {
 		if (result != DISP_CHANGE_SUCCESSFUL) {
 			throw InteractBoxException(ErrorCodes::CannotChangeDisplay);
 		}
+#endif
 	}
 } // namespace Utils

@@ -14,55 +14,55 @@ namespace Errors {
 		_messageBoxPath = messageBoxPath;
 	}
 
-	void ErrorHandler::handleError(HttpStatus::Code &c, string &route) {
+	void ErrorHandler::handleError(HttpStatus::Code& c, string& route) {
 		_loggingUtil->err(
 			"Route " + route + " raised status " + to_string(c) + " " + HttpStatus::reasonPhrase(c)
 		);
 	}
 
 #if WINVER > _WIN32_WINNT_NT4
-	void ErrorHandler::handleError(wstring &e) {
+	void ErrorHandler::handleError(wstring& e) {
 		string message = StringHelper::wideStringToString(e);
 		_loggingUtil->err(message);
 		showErrorBox(e);
 	}
 
-	void ErrorHandler::handleError(wstring *e) {
+	void ErrorHandler::handleError(wstring* e) {
 		string message = StringHelper::wideStringToString(*e);
 		_loggingUtil->err(message);
 		showErrorBox(*e);
 	}
 #endif
 
-	void ErrorHandler::handleError(string &e) {
+	void ErrorHandler::handleError(string& e) {
 		_loggingUtil->err(e);
 		showErrorBox(e);
 	}
 
-	void ErrorHandler::handleError(string *e) {
+	void ErrorHandler::handleError(string* e) {
 		_loggingUtil->err(*e);
 		showErrorBox(*e);
 	}
 
-	void ErrorHandler::handleError(exception &e) {
+	void ErrorHandler::handleError(exception& e) {
 		string message = e.what();
 		_loggingUtil->err(message);
 		showErrorBox(message);
 	}
 
-	void ErrorHandler::handleError(exception *e) {
+	void ErrorHandler::handleError(exception* e) {
 		string message = e->what();
 		_loggingUtil->err(message);
 		showErrorBox(message);
 	}
 
-	void ErrorHandler::handleError(InteractBoxException &e) {
+	void ErrorHandler::handleError(InteractBoxException& e) {
 		string message = e.what();
 		_loggingUtil->err(message);
 		showErrorBox(message);
 	}
 
-	void ErrorHandler::handleError(InteractBoxException *e) {
+	void ErrorHandler::handleError(InteractBoxException* e) {
 		string message = e->what();
 		_loggingUtil->err(message);
 		showErrorBox(message);

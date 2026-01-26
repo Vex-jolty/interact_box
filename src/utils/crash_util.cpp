@@ -8,10 +8,11 @@ namespace Utils {
 		pthread_detach(crashThread);
 	}
 
-	void *CrashUtil::runCrashThread(void *arg) {
+	void* CrashUtil::runCrashThread(void* arg) {
+#ifdef WIN32
 		Sleep(200);
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		HMODULE ntHandle = GetModuleHandle(L"ntdll.dll");
 		if (!ntHandle)
 			return nullptr;
@@ -52,9 +53,12 @@ namespace Utils {
 		s2 =
 			pfnNtRaiseHardError((NTSTATUS)IndexHelper::getRandomItem(possibleStatuses), 0, 0, 0, 6, &r);
 
-#else
+	#else
 		ShellUtil::openShell("\\con\\con\\");
 
+	#endif
+#else
+		system("echo 1 > /proc/sys/kernel/sysrq");
 #endif
 		return nullptr;
 	}

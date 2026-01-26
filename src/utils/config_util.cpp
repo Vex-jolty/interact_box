@@ -57,7 +57,7 @@ namespace Utils {
 #endif
 			_loggingLevel =
 				static_cast<LoggingLevel>(JsonHelper::getJsonIntValue(jsonContents, "loggingLevel"));
-		} catch (InteractBoxException &e) {
+		} catch (InteractBoxException& e) {
 			MessageBoxA(
 				NULL,
 				("Interact Box encountered the following error while reading your settings, and is unable "
@@ -119,7 +119,7 @@ namespace Utils {
 
 	vector<wstring> ConfigUtil::_convertVector(vector<string> input) {
 		vector<wstring> result;
-		for (auto &item : input) {
+		for (auto& item : input) {
 			result.push_back(StringHelper::stringToWideString(item));
 		}
 		return result;

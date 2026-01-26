@@ -12,17 +12,17 @@ namespace Server::Http {
 			HttpRoute(
 				std::string path,
 				std::string method,
-				std::function<void(HttpRequest *request, HttpResponse *response)> handler,
+				std::function<void(HttpRequest* request, HttpResponse* response)> handler,
 				std::optional<bool> condition = std::nullopt
 			);
 			std::string getPath();
 			std::string getMethod();
-			void executeHandler(HttpRequest *request, HttpResponse *response);
+			void executeHandler(HttpRequest* request, HttpResponse* response);
 
 		private:
 			std::string _path;
 			std::string _method;
-			std::function<void(HttpRequest *request, HttpResponse *response)> _handler;
+			std::function<void(HttpRequest* request, HttpResponse* response)> _handler;
 			std::optional<bool> _condition;
 	};
 } // namespace Server::Http

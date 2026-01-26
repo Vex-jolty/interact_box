@@ -9,8 +9,13 @@ set(BUILDING_FULL_PACKAGE TRUE)
 
 option(CREATE_ISO "Whether to create an ISO containing the installer" OFF)
 
-if (NOT MINGW)
-	message(FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} is not a currently supported compiler")
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	if (NOT MINGW)
+		message(FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} is not a currently supported compiler")
+	endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+else()
+	message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is not a currently supported operating system")
 endif()
 
 set(TARGET_WINDOWS_VERSION "win98" CACHE STRING "The version of Windows to target (win98, winme, win2k, winxp, vista, win7, win8, win10, win11)")
@@ -35,18 +40,19 @@ endif()
 add_subdirectory(${CMAKE_SOURCE_DIR}/interact_box_libs)
 add_subdirectory(${CMAKE_SOURCE_DIR}/interact_box_extras)
 
-add_executable(
-	interact_box src/main.cpp
+set(SERVER_FILES
 	src/server/web_server.cpp
 	src/server/http/http_response.cpp
 	src/server/http/http_request.cpp
 	src/server/http/http_route.cpp
 	src/server/routes/route_handlers.cpp
 	src/server/routes/route_handler_auxiliaries.cpp
+)
+
+set(UTIL_FILES
 	src/utils/crash_util.cpp
 	src/utils/message_box_util.cpp
 	src/utils/file_util.cpp
-	src/utils/registry_util.cpp
 	src/utils/time_util.cpp
 	src/utils/reboot_util.cpp
 	src/utils/logging_util.cpp
@@ -54,6 +60,16 @@ add_executable(
 	src/utils/resolution_util.cpp
 	src/utils/shell_util.cpp
 	src/utils/config_util.cpp
+)
+
+if (WIN32)
+	list(APPEND UTIL_FILES src/utils/registry_util.cpp)
+endif()
+
+add_executable(
+	interact_box src/main.cpp
+	${SERVER_FILES}
+	${UTIL_FILES}
 	src/errors/error_handler.cpp
 	include/http_status_codes.h
 	src/threads/tray_thread.cpp
@@ -72,7 +88,7 @@ set(MAIN_DEPENDENCIES
 	message_box_process
 )
 
-if (NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_WRAPPERS)
+if (IS_WINDOWS_BUILD AND NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_WRAPPERS)
 	list(APPEND MAIN_DEPENDENCIES tts_process)
 endif()
 
@@ -87,7 +103,13 @@ target_include_directories(interact_box PRIVATE
 	${CMAKE_SOURCE_DIR}/interact_box_extras/include
 )
 
-target_link_libraries(interact_box PRIVATE platform_config errors string_helper file_helper json_helper process_helper ws2_32 wininet version gdi32 dbghelp)
+target_link_libraries(interact_box PRIVATE platform_config errors string_helper file_helper json_helper process_helper)
+if (IS_WINDOWS_BUILD)
+	target_link_libraries(interact_box PRIVATE ws2_32 wininet version gdi32 dbghelp)
+	if (NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_PTHREAD9X)
+		target_link_libraries(interact_box PRIVATE wbemuuid)
+	endif()
+endif()
 
 link_base_libs(interact_box ${TARGET_WINDOWS_VERSION} TRUE)
 
@@ -128,7 +150,7 @@ else()
 	file(WRITE ${CMAKE_BINARY_DIR}/installer/malware_with_date_specific_deployment.json "{}")
 endif()
 
-if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
+if(IS_WINDOWS_BUILD AND TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
 	set(PRODUCT_FLAVOR "Interact Box 98")
 	set(HEADER_IMAGE "..\\..\\images\\Interact Box 98 header image.bmp")
 	set(INSTALLER_ICON "..\\..\\icon\\win98.ico")

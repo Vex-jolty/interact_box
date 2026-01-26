@@ -3,9 +3,10 @@
 using namespace std;
 using namespace Server;
 
-#pragma comment(lib, "dbghelp.lib")
+#ifdef WIN32
+	#pragma comment(lib, "dbghelp.lib")
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 wstring getExceptionName(DWORD code) {
 	switch (code) {
 		case EXCEPTION_ACCESS_VIOLATION:
@@ -54,7 +55,7 @@ wstring getExceptionName(DWORD code) {
 }
 
 // Optional wide string to inform calling function of potential failure, or of file name
-optional<wstring> createMinidump(EXCEPTION_POINTERS *exceptionPointers) {
+optional<wstring> createMinidump(EXCEPTION_POINTERS* exceptionPointers) {
 	TCHAR szFileName[MAX_PATH];
 	wstring localTime =
 		StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M"));
@@ -98,7 +99,7 @@ LONG CALLBACK vectoredExceptionHandler(PEXCEPTION_POINTERS exceptionPointers) {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-#else
+	#else
 
 string getExceptionName(DWORD code) {
 	switch (code) {
@@ -147,7 +148,7 @@ string getExceptionName(DWORD code) {
 	}
 }
 
-LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS *pExceptionInfo) {
+LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	HANDLE hFile =
 		CreateFile("crashdump.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {
@@ -168,11 +169,11 @@ LONG WINAPI topLevelExceptionHandler(EXCEPTION_POINTERS *pExceptionInfo) {
 	MessageBox(NULL, errorMessage.c_str(), "INTERACT BOX FATAL ERROR", MB_ICONERROR);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
-#endif
+	#endif
 pthread_mutex_t themeMutex = PTHREAD_MUTEX_INITIALIZER;
 // cSpell:enable
 
-LoggingLevel setLoggingLevel(int argc, char *argv[]) {
+LoggingLevel setLoggingLevel(int argc, char* argv[]) {
 	if (argc < 2 || argv[1] != "--loglevel")
 		return LoggingLevel::DEBUG;
 	if (boost::algorithm::istarts_with(argv[2], "err"))
@@ -184,53 +185,132 @@ LoggingLevel setLoggingLevel(int argc, char *argv[]) {
 	return LoggingLevel::DEBUG;
 }
 
-int main(int argc, char *argv[]) {
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER >= _WIN32_WINNT_VISTA
+bool isAnyAntivirusPresent() {
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (FAILED(hr))
+		return true;
+
+	hr = CoInitializeSecurity(
+		nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr,
+		EOAC_NONE, nullptr
+	);
+
+	if (FAILED(hr) && hr != RPC_E_TOO_LATE) {
+		CoUninitialize();
+		return true;
+	}
+
+	IWbemLocator* pLoc = nullptr;
+	hr = CoCreateInstance(
+		CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc
+	);
+
+	if (FAILED(hr)) {
+		CoUninitialize();
+		return true;
+	}
+
+	IWbemServices* pSvc = nullptr;
+	hr = pLoc->ConnectServer(
+		_bstr_t(L"ROOT\\SecurityCenter2"), nullptr, nullptr, nullptr, 0, nullptr, nullptr, &pSvc
+	);
+
+	pLoc->Release();
+
+	if (FAILED(hr)) {
+		CoUninitialize();
+		return true;
+	}
+
+	hr = CoSetProxyBlanket(
+		pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL,
+		RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE
+	);
+
+	if (FAILED(hr)) {
+		pSvc->Release();
+		CoUninitialize();
+		return true;
+	}
+
+	IEnumWbemClassObject* pEnumerator = nullptr;
+	hr = pSvc->ExecQuery(
+		_bstr_t(L"WQL"), _bstr_t(L"SELECT * FROM AntiVirusProduct"),
+		WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator
+	);
+
+	pSvc->Release();
+
+	if (FAILED(hr)) {
+		CoUninitialize();
+		return true;
+	}
+
+	IWbemClassObject* pObj = nullptr;
+	ULONG returned = 0;
+
+	hr = pEnumerator->Next(WBEM_INFINITE, 1, &pObj, &returned);
+
+	bool found = (returned > 0);
+
+	if (pObj)
+		pObj->Release();
+
+	pEnumerator->Release();
+	CoUninitialize();
+
+	return found;
+}
+	#endif
+
+int main(int argc, char* argv[]) {
+	#if WINVER > _WIN32_WINNT_NT4
 	PVOID handler = AddVectoredExceptionHandler(1, vectoredExceptionHandler);
 	Utils::ConfigUtil configUtil(
 		StringHelper::wideStringToString(FileHelper::getWindowsDirectory()) +
 		"\\interact_box_config.json"
 	);
 	wstring host = configUtil.getHost();
-#else
+	#else
 	SetUnhandledExceptionFilter(topLevelExceptionHandler);
 
 	Utils::ConfigUtil configUtil(FileHelper::getWindowsDirectory() + "\\interact_box_config.json");
 
 	string host = configUtil.getHost();
-#endif
+	#endif
 	int port = configUtil.getPort();
 
 	// Configurable directories and extensions
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	wstring wallDir = configUtil.getWallpaperDir();
 	wstring malwareDir = configUtil.getMalwareDir();
 	vector<wstring> openableExtensions = configUtil.getOpenableExtensions();
 	vector<wstring> musicExtensions = configUtil.getMusicExtensions();
-#else
+	#else
 	string wallDir = StringHelper::toLowercase(configUtil.getWallpaperDir());
 	string malwareDir = StringHelper::toLowercase(configUtil.getMalwareDir());
 	string bootImagesDir = StringHelper::toLowercase(configUtil.getBootImagesDir());
 	string shutdownImagesDir = StringHelper::toLowercase(configUtil.getShutdownImagesDir());
 	vector<string> openableExtensions = configUtil.getOpenableExtensions();
 	vector<string> musicExtensions = configUtil.getMusicExtensions();
-#endif
+	#endif
 
 	// Start utilities
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
 	wstring logFileName = fileUtil.workingDirectory + L"\\" +
 		StringHelper::stringToWideString(Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M")) +
 		L"-logfile.log";
 	wstring msgBoxProcessName = fileUtil.workingDirectory + L"\\message_box_process.exe";
-#else
+	#else
 	Utils::FileUtil fileUtil(
 		wallDir, malwareDir, bootImagesDir, shutdownImagesDir, openableExtensions, musicExtensions
 	);
 	string logFileName = fileUtil.workingDirectory + "\\" +
 		Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
 	string msgBoxProcessName = fileUtil.workingDirectory + "\\message_box_process.exe";
-#endif
+	#endif
 
 	Utils::LoggingUtil loggingUtil(logFileName, configUtil.getLoggingLevel());
 	shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);
@@ -240,17 +320,52 @@ int main(int argc, char *argv[]) {
 		make_unique<Errors::ErrorHandler>(errorHandler);
 
 	// Initial debug logs
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	loggingUtil.debug(
 		"Working directory is " + StringHelper::wideStringToString(fileUtil.workingDirectory)
 	);
 	loggingUtil.debug("Wallpapers directory is " + StringHelper::wideStringToString(wallDir));
 	loggingUtil.debug("Malware directory is " + StringHelper::wideStringToString(malwareDir));
-#else
+	#else
 	loggingUtil.debug("Working directory is " + fileUtil.workingDirectory);
 	loggingUtil.debug("Wallpapers directory is " + wallDir);
 	loggingUtil.debug("Malware directory is " + malwareDir);
-#endif
+	#endif
+
+	#if WINVER >= _WIN32_WINNT_VISTA
+	if (isAnyAntivirusPresent()) {
+
+		try {
+			DWORD avWarningVal = Utils::RegistryUtil::getKeyValueDWORD(
+				HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown"
+			);
+			if (!(bool)avWarningVal) {
+				Utils::MessageBoxUtil::createBox(
+					L"Warning",
+					L"Antivirus software can prevent Interact Box from properly working. Please ensure "
+					L"you've "
+					L"added an exception in your AV's settings to allow all executables in Interact Box's "
+					L"installation folder to run without any checks.",
+					L"w", L"ok"
+				);
+				Utils::RegistryUtil::setNewKeyValue(
+					HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown", 1
+				);
+			}
+		} catch (InteractBoxException& e) {
+			Utils::MessageBoxUtil::createBox(
+				L"Warning",
+				L"Antivirus software can prevent Interact Box from properly working. Please ensure you've "
+				L"added an exception in your AV's settings to allow all executables in Interact Box's "
+				L"installation folder to run without any checks.",
+				L"w", L"ok"
+			);
+			Utils::RegistryUtil::setNewKeyValue(
+				HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown", 1
+			);
+		}
+	}
+	#endif
 	// Starting server
 	Server::WebServer webServer =
 		WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
@@ -265,7 +380,7 @@ int main(int argc, char *argv[]) {
 
 		Threads::ThreadData threadData{hInstance, &webServer, nullptr};
 		loggingUtil.debug("Starting tray thread");
-		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void *)&threadData);
+		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void*)&threadData);
 		pthread_detach(thread);
 		loggingUtil.debug("Starting server");
 		webServer.start();
@@ -273,24 +388,28 @@ int main(int argc, char *argv[]) {
 		if (threadData.hwndPtr) {
 			PostMessage(*(threadData.hwndPtr), WM_CLOSE, 0, 0);
 		}
-	} catch (string &e) {
+	} catch (string& e) {
 		errorHandler.handleError(e);
-	} catch (string *e) {
+	} catch (string* e) {
 		errorHandler.handleError(*e);
-	} catch (InteractBoxException &e) {
+	} catch (InteractBoxException& e) {
 		errorHandler.handleError(e);
-	} catch (InteractBoxException *e) {
+	} catch (InteractBoxException* e) {
 		errorHandler.handleError(e);
-	} catch (exception &e) {
+	} catch (exception& e) {
 		errorHandler.handleError(e);
-	} catch (exception *e) {
+	} catch (exception* e) {
 		errorHandler.handleError(*e);
 	}
 
 	loggingUtil.stopLogging();
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	RemoveVectoredExceptionHandler(handler);
-#endif
+	#endif
 	return 0;
 }
+
+#else
+
+#endif

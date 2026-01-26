@@ -1,10 +1,15 @@
 #pragma once
 #include "utils.hpp"
-#include "general_definitions.hpp"
+#ifdef __linux__
+	#include <spawn.h>
+#else
+	#include "general_definitions.hpp"
+#endif
 
 namespace Utils {
 	class ShellUtil {
 		public:
+#ifdef WIN32
 			static HINSTANCE openShell(
 				std::string toOpen,
 				std::string verb = "open",
@@ -19,5 +24,11 @@ namespace Utils {
 				std::optional<std::wstring> parameters = std::nullopt,
 				INT nShowCmd = SW_NORMAL
 			);
+#else
+			static pid_t openShell(
+				const std::string& path,
+				std::optional<const std::string&> parameters = std::nullopt
+			);
+#endif
 	};
 } // namespace Utils

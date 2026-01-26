@@ -1,6 +1,8 @@
 #pragma once
-#ifndef _WINSOCK2API_
-	#include <winsock2.h>
+#ifdef WIN32
+	#ifndef _WINSOCK2API_
+		#include <winsock2.h>
+	#endif
 #endif
 #ifndef _GLIBCXX_STRING
 	#include <string>
@@ -19,8 +21,10 @@
 #include "http/http_response.hpp"
 #include "errors/error_handler.hpp"
 #include "errors/interact_box_exceptions.hpp"
-#ifndef _WS2TCPIP_H_
-	#include <ws2tcpip.h>
+#ifdef WIN32
+	#ifndef _WS2TCPIP_H_
+		#include <ws2tcpip.h>
+	#endif
 #endif
 #include <atomic>
 
@@ -59,13 +63,13 @@ namespace Server {
 			std::vector<Http::HttpRoute> _routes;
 			std::unique_ptr<Errors::ErrorHandler> _errorHandler;
 
-			static void *handleRequest(void *arg);
-			void sendHttpResponse(const std::string &response);
+			static void* handleRequest(void* arg);
+			void sendHttpResponse(const std::string& response);
 			std::string getClientIpAddress();
 	};
 
 	struct WebServerAndRequest {
-		WebServer *server;
-		Http::HttpRequest *request;
+			WebServer* server;
+			Http::HttpRequest* request;
 	};
 } // namespace Server

@@ -1,19 +1,28 @@
 #pragma once
-#include <sdkddkver.h>
+#ifdef WIN32
+	#include <sdkddkver.h>
 
-#if WINVER < _WIN32_WINNT_VISTA
-	#define _USE_32BIT_TIME_T 1
+	#if WINVER < _WIN32_WINNT_VISTA
+		#define _USE_32BIT_TIME_T 1
+	#endif
+
+	#include <winsock2.h>
+	#include <windows.h>
 #endif
-
-#include <winsock2.h>
-#include <windows.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <thread>
 #include <pthread.h>
-#include <dbghelp.h>
+#ifdef WIN32
+	#include <dbghelp.h>
+#endif
 #include <boost/algorithm/string.hpp>
+
+#if defined(WIN32) && WINVER >= _WIN32_WINNT_VISTA
+	#include <wbemcli.h>
+	#include <comdef.h>
+#endif
 
 #include "utils/config_util.hpp"
 #include "utils/crash_util.hpp"
@@ -40,17 +49,25 @@
 #include "exported.hpp"
 
 struct FileAndDate {
-	std::string file;
-	std::string date;
+		std::string file;
+		std::string date;
 };
 
 struct ThemeArgs {
-	std::shared_ptr<Utils::FileUtil> fileUtil;
-	std::shared_ptr<Utils::LoggingUtil> loggingUtil;
-	std::wstring randomFile;
+		std::shared_ptr<Utils::FileUtil> fileUtil;
+		std::shared_ptr<Utils::LoggingUtil> loggingUtil;
+		std::wstring randomFile;
 };
 
 struct BaseDataItem {
-	std::vector<std::wstring> files;
-	int total;
+		std::vector<std::wstring> files;
+		int total;
 };
+
+#if WINVER >= _WIN32_WINNT_VISTA
+struct AntivirusInfo {
+		std::wstring name;
+		std::wstring exePath;
+		uint32_t productState;
+};
+#endif

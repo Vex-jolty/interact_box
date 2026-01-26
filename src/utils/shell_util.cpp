@@ -1,7 +1,9 @@
 #include "utils/shell_util.hpp"
+#include "shell_util.hpp"
 
 namespace Utils {
 	using namespace std;
+#ifdef WIN32
 	HINSTANCE ShellUtil::openShell(
 		string toOpen,
 		string verb,
@@ -37,4 +39,15 @@ namespace Utils {
 		}
 		return instance;
 	}
+#else
+	pid_t ShellUtil::openShell(const string& path, optional<const string&> parameters) {
+		string command = "xdg-open ";
+		command += path;
+		if (parameters.has_value()) {
+			command += " " + parameters;
+		}
+		system(command);
+		return ProcessHelper::getProcessId(path);
+	}
+#endif
 } // namespace Utils

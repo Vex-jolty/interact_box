@@ -1,10 +1,12 @@
 #pragma once
 #include <ctime>
-#ifndef _WINSOCK2API_
-	#include <winsock2.h>
-#endif
-#ifndef _WINDOWS_
-	#include <windows.h>
+#ifdef WIN32
+	#ifndef _WINSOCK2API_
+		#include <winsock2.h>
+	#endif
+	#ifndef _WINDOWS_
+		#include <windows.h>
+	#endif
 #endif
 #ifndef _GLIBCXX_VECTOR
 	#include <vector>
@@ -27,11 +29,13 @@
 #ifndef _GLIBCXX_MAP
 	#include <map>
 #endif
-#ifndef _INC_TOOLHELP32
-	#include <tlhelp32.h>
-#endif
-#ifndef _INC_TCHAR
-	#include <tchar.h>
+#ifdef WIN32
+	#ifndef _INC_TOOLHELP32
+		#include <tlhelp32.h>
+	#endif
+	#ifndef _INC_TCHAR
+		#include <tchar.h>
+	#endif
 #endif
 #ifndef _GLIBCXX_OPTIONAL
 	#include <optional>

@@ -2,7 +2,7 @@
 
 namespace Utils {
 	using namespace std;
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 	void MessageBoxUtil::createBox(wstring title, wstring content, wstring type, wstring buttons) {
 		wstring processName = L"message_box_process.exe";
 		wstring workingDir = FileHelper::getWorkingDirectory();
@@ -24,14 +24,24 @@ namespace Utils {
 	}
 #else
 	void MessageBoxUtil::createBox(string title, string content, string type, string buttons) {
-		string processName = "message_box_process.exe";
 		string workingDir = FileHelper::getWorkingDirectory();
+	#ifdef WIN32
+		string processName = "message_box_process.exe";
 		ShellUtil::openShell(
 			processName, "open", workingDir,
 			"--title " + getParsedString(title) + " --content " + getParsedString(content) + " --type " +
 				getParsedString(type) + " --buttons " + getParsedString(buttons)
 		);
 		ProcessHelper::setToForeground(workingDir + "\\" + processName);
+	#else
+		string processName = "message_box_process";
+		string path = workingDir + "/" + processName;
+		ShellUtil::openShell(
+			path,
+			"--title " + getParsedString(title) + " --content " + getParsedString(content) + " --type " +
+				getParsedString(type) + " --buttons " + getParsedString(buttons)
+		);
+	#endif
 	}
 
 	string MessageBoxUtil::getParsedString(string input) {

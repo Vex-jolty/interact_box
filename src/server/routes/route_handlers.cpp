@@ -8,13 +8,13 @@ namespace Server::Routes {
 	wstring processThemeCommand(
 		shared_ptr<Utils::FileUtil> fileUtil,
 		shared_ptr<Utils::LoggingUtil> loggingUtil,
-		pthread_mutex_t *themeMutex
+		pthread_mutex_t* themeMutex
 	) {
 #else
 	string processThemeCommand(
 		shared_ptr<Utils::FileUtil> fileUtil,
 		shared_ptr<Utils::LoggingUtil> loggingUtil,
-		pthread_mutex_t *themeMutex
+		pthread_mutex_t* themeMutex
 	) {
 #endif
 		if (fileUtil->themeFiles.size() == 0)
@@ -24,9 +24,9 @@ namespace Server::Routes {
 #else
 		string file = fileUtil->selectRandomFile("theme");
 #endif
-		ThemeArgs *themeArgs = new ThemeArgs{fileUtil, loggingUtil, file, themeMutex};
+		ThemeArgs* themeArgs = new ThemeArgs{fileUtil, loggingUtil, file, themeMutex};
 		pthread_t themeThread;
-		pthread_create(&themeThread, NULL, runThemeThread, (void *)themeArgs);
+		pthread_create(&themeThread, NULL, runThemeThread, (void*)themeArgs);
 		pthread_detach(themeThread);
 		return file;
 	}
@@ -59,7 +59,7 @@ namespace Server::Routes {
 			return pack;
 		}
 		wstring jsonFile;
-		for (auto &file : files) {
+		for (auto& file : files) {
 			if (!file.ends_with(L".json")) {
 				continue;
 			}
@@ -75,7 +75,7 @@ namespace Server::Routes {
 			return pack;
 		}
 		string jsonFile;
-		for (auto &file : files) {
+		for (auto& file : files) {
 			if (!file.ends_with(".json")) {
 				continue;
 			}
@@ -167,14 +167,14 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/",
 			"GET",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				res->setResponse(nullopt, "pong", 200);
 			}
 		),
 		Http::HttpRoute(
 			"/baseData",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				map<string, int> resBody;
 				resBody["total files"] = _fileUtil->files.size();
 				resBody["malware files"] = _fileUtil->malwareFiles.size();
@@ -188,7 +188,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/abort",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				Utils::MessageBoxUtil::createBox(
 					L"Exiting", L"Abort request received, Interact Box will now close", L"warn", L"ok"
@@ -202,7 +202,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/box",
 			"POST",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				processBoxRequest(_msgBoxProcessName, req->body, _fileUtil);
 				res->setResponse(nullopt, "Opened box", 200);
 			},
@@ -211,7 +211,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/sound",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				auto pack = processSoundCommand(_fileUtil);
 #if WINVER > _WIN32_WINNT_NT4
 				Json::Value jsonBody =
@@ -228,7 +228,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/terminal",
 			"POST",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				string command = JsonHelper::getJsonStringValue(req->body, "command");
 #if WINVER > _WIN32_WINNT_NT4
 				Utils::CmdUtil::executeDosCommand(
@@ -249,7 +249,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/tts",
 			"POST",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				string input = JsonHelper::getJsonStringValue(req->body, "input");
 				Utils::ShellUtil::openShell(
@@ -266,7 +266,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/wallpaper",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				processWallpaperCommand(_fileUtil);
 				res->setResponse(nullopt, "Set wallpaper", 200);
 			},
@@ -275,7 +275,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/deleteRandom",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				auto deletedFile = _fileUtil->deleteRandomFile();
 #if WINVER > _WIN32_WINNT_NT4
 				Json::Value jsonBody =
@@ -290,7 +290,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/deleteSystem",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				wstring triviaGamePath = _fileUtil->workingDirectory + L"\\trivia_game.exe";
 #else
@@ -305,7 +305,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/openRandom",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				auto file = _fileUtil->openRandomFile();
 				ProcessHelper::setToForeground(file);
 #if WINVER > _WIN32_WINNT_NT4
@@ -321,7 +321,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/music",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				wstring file = _fileUtil->openRandomFile(L"music");
 #else
@@ -341,7 +341,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/runMalware",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				auto malwareFile = processMalwareCommand(_fileUtil, _loggingUtil);
 				ProcessHelper::setToForeground(malwareFile);
 #if WINVER > _WIN32_WINNT_NT4
@@ -357,7 +357,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/reboot",
 			"GET",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				Utils::RebootUtil::reboot();
 				res->setResponse(nullopt, "Rebooted", 200);
 			},
@@ -366,7 +366,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/crash",
 			"GET",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				Utils::CrashUtil::crash();
 				res->setResponse(nullopt, "Crashed", 200);
 			},
@@ -375,7 +375,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/macro",
 			"GET",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				Utils::ResolutionUtil::changeResolution(true);
 				res->setResponse(nullopt, "Changed resolution", 200);
 			},
@@ -384,7 +384,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/micro",
 			"GET",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				Utils::ResolutionUtil::changeResolution(false);
 				res->setResponse(nullopt, "Changed resolution", 200);
 			},
@@ -393,7 +393,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/colors",
 			"POST",
-			[](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 				int colors = JsonHelper::getJsonIntValue(req->body, "colors");
 				Utils::ResolutionUtil::changeColors(colors);
 				res->setResponse(nullopt, "ok", 200);
@@ -403,7 +403,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/theme",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 				auto theme = processThemeCommand(_fileUtil, _loggingUtil, _themeMutex);
 #if WINVER > _WIN32_WINNT_NT4
 				res->setResponse(
@@ -419,7 +419,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/winamp",
 			"GET",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				wstring winampExecutable = L"C:\\PROGRAM FILES\\WINAMP\\WINAMP.EXE";
 #else
@@ -440,7 +440,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/bootImage",
 			"POST",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
 #else
@@ -460,7 +460,7 @@ namespace Server::Routes {
 		Http::HttpRoute(
 			"/systemBox",
 			"POST",
-			[this](Http::HttpRequest *req, Http::HttpResponse *res) {
+			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if WINVER > _WIN32_WINNT_NT4
 				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
 			},
@@ -486,8 +486,8 @@ namespace Server::Routes {
 		_configUtil.getUseSystemBox()
 #endif
 		),
-		Http::HttpRoute("/killInteractBox", "GET", [](Http::HttpRequest *req, Http::HttpResponse *res) {
-			int *pBadPtr = nullptr;
+		Http::HttpRoute("/killInteractBox", "GET", [](Http::HttpRequest* req, Http::HttpResponse* res) {
+			int* pBadPtr = nullptr;
 			*pBadPtr = 42;
 			res->setResponse(nullopt, "ok", 200);
 		})
