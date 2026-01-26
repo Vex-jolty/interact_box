@@ -41,7 +41,11 @@ namespace Utils {
 
 		if (!content.ends_with("\r\n"))
 			content += "\r\n";
+#ifdef WIN32
+		FileHelper::writeToFile(_fileHandle, levelString + " " + dateTimeString + " " + content);
+#else
 		FileHelper::writeToFile(_fileName, levelString + " " + dateTimeString + " " + content);
+#endif
 	}
 
 	void LoggingUtil::info(string content) { log(content, LoggingLevel::INFO); }
