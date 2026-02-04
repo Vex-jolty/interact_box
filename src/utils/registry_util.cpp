@@ -1,8 +1,9 @@
 #include "utils/registry_util.hpp"
 
+#ifdef WIN32
 namespace Utils {
 	using namespace std;
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	bool RegistryUtil::setNewKeyValue(
 		HKEY topRegKeyToOpen,
 		wstring regKeyNameToOpen,
@@ -123,7 +124,7 @@ namespace Utils {
 		return keys;
 	}
 
-#else
+	#else
 	bool RegistryUtil::setNewKeyValue(
 		HKEY topRegKeyToOpen,
 		string regKeyNameToOpen,
@@ -197,5 +198,6 @@ namespace Utils {
 			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
 		return keys;
 	}
-#endif
+	#endif
 } // namespace Utils
+#endif

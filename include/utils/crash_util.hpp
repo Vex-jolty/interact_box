@@ -8,7 +8,9 @@
 
 	#define MAX_U_SHORT_SIZE 65535
 	#define OPTION_SHUTDOWN 6
-
+#else
+	#include <thread>
+	#include <chrono>
 #endif
 
 namespace Utils {

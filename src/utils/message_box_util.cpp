@@ -36,11 +36,9 @@ namespace Utils {
 	#else
 		string processName = "message_box_process";
 		string path = workingDir + "/" + processName;
-		ShellUtil::openShell(
-			path,
-			"--title " + getParsedString(title) + " --content " + getParsedString(content) + " --type " +
-				getParsedString(type) + " --buttons " + getParsedString(buttons)
-		);
+		string args = " --title " + getParsedString(title) + " --content " + getParsedString(content) +
+			" --type " + getParsedString(type) + " --buttons \"" + getParsedString(buttons) + "\"";
+		system((path + args + " &").c_str());
 	#endif
 	}
 

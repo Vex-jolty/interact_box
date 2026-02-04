@@ -3,7 +3,7 @@
 namespace Utils {
 	using namespace std;
 
-	void CmdUtil::executeDosCommand(string command, string malwareDir, bool warnAboutUrlsInTerminal) {
+	void CmdUtil::executeTerminalCommand(string command, string malwareDir, bool warnAboutUrlsInTerminal) {
 		/** cSpell:disable */
 #ifdef WIN32
 		if (!boost::iends_with(command, ";pause"))
@@ -110,11 +110,12 @@ namespace Utils {
 #else
 		string tempDir = "/tmp";
 		string currentTime = TimeUtil::getAndFormatCurrentTime("%Y-%m-%d-%H_%M");
-		string tempFile = "chat-" + currentTime + ".BAT";
+		string tempFile = "chat-" + currentTime + ".sh";
 		string fullTempFilePath = tempDir + "/" + tempFile;
 
 		malwareDir = StringHelper::toLowercase(malwareDir);
 		_checkIfCommandIsValid(command, malwareDir);
+		system(fullTempFilePath.c_str());
 #endif
 	}
 

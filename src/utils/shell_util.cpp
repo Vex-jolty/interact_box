@@ -39,13 +39,25 @@ namespace Utils {
 		return instance;
 	}
 #else
-	pid_t ShellUtil::openShell(const string& path, optional<const string&> parameters) {
-		string command = "xdg-open ";
+	pid_t ShellUtil::openShell(const string& path, optional<string> parameters) {
+		string command = "xdg-open \"";
 		command += path;
 		if (parameters.has_value()) {
-			command += " " + parameters;
+			string parametersVal = parameters.value();
+			if (boost::contains(parametersVal, " ")) {
+				boost::replace_all(parametersVal, " ", "\\ ");
+			}
+			if (boost::contains(parametersVal, ";")) {
+				boost::replace_all(parametersVal, ";", "\\;");
+			}
+			if (boost::contains(parametersVal, "\"")) {
+				boost::replace_all(parametersVal, "\"", "\\\"");
+			}
+			command += " " + parametersVal;
 		}
-		system(command);
+		command += "\"";
+		cout << command << "\n";
+		system(command.c_str());
 		return ProcessHelper::getProcessId(path);
 	}
 #endif

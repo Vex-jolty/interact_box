@@ -12,7 +12,7 @@ namespace Server::Routes {
 	struct ThemeArgs {
 			std::shared_ptr<Utils::FileUtil> fileUtil;
 			std::shared_ptr<Utils::LoggingUtil> loggingUtil;
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring randomFile;
 #else
 			std::string randomFile;
@@ -21,7 +21,7 @@ namespace Server::Routes {
 	};
 
 	struct BaseDataItem {
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::vector<std::wstring> files;
 #else
 			std::vector<std::string> files;
@@ -29,9 +29,10 @@ namespace Server::Routes {
 			int total;
 	};
 
+#ifdef WIN32
 	BOOL CALLBACK getOkButton(HWND hwnd, LPARAM lParam);
 	void* runThemeThread(void* arg);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	void setSoundsFromJson(
 		Json::Value jsonData,
 		std::wstring packDir,
@@ -43,7 +44,7 @@ namespace Server::Routes {
 		Json::Value jsonRequest,
 		std::shared_ptr<Utils::FileUtil> fileUtil
 	);
-#else
+	#else
 	void setSoundsFromJson(Json::Value jsonData, std::string packDir, std::vector<std::string> keys);
 	void setDefaultSounds(std::vector<std::string> keys);
 	void processBoxRequest(
@@ -51,6 +52,13 @@ namespace Server::Routes {
 		Json::Value jsonRequest,
 		std::shared_ptr<Utils::FileUtil> fileUtil
 	);
-#endif
+	#endif
 	void processWallpaperCommand(std::shared_ptr<Utils::FileUtil> fileUtil);
+#else
+	void processBoxRequest(
+		std::string processName,
+		Json::Value jsonRequest,
+		std::shared_ptr<Utils::FileUtil> fileUtil
+	);
+#endif
 } // namespace Server::Routes

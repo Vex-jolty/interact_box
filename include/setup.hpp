@@ -44,7 +44,9 @@
 
 #include "./resources.h"
 
-#include "threads/tray_thread.hpp"
+#ifdef WIN32
+	#include "threads/tray_thread.hpp"
+#endif
 
 #include "exported.hpp"
 

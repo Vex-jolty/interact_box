@@ -7,7 +7,7 @@
 namespace Utils {
 	class CmdUtil {
 		public:
-			static void executeDosCommand(
+			static void executeTerminalCommand(
 				std::string command,
 				std::string malwareDir,
 				bool warnAboutUrlsInTerminal

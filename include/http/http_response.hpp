@@ -11,6 +11,7 @@
 #ifdef WIN32
 	#include <winsock2.h>
 #endif
+#include <boost/algorithm/string.hpp>
 #include "http_status_codes.h"
 #include "json_helper.hpp"
 

@@ -47,6 +47,8 @@ set(SERVER_FILES
 	src/server/http/http_route.cpp
 	src/server/routes/route_handlers.cpp
 	src/server/routes/route_handler_auxiliaries.cpp
+	src/server/socket_backend/socket_backend_windows.cpp
+	src/server/socket_backend/socket_backend_linux.cpp
 )
 
 set(UTIL_FILES
@@ -202,10 +204,10 @@ set(BOOT_KEYS "")
 set(BOOT_BOOL_KEYS "")
 set(XP_BOOL_KEYS "")
 
-if(TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
+if(WIN32 AND TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_USE_IB98)
 	set(BOOT_KEYS "\"bootImagesDir\": \"boot_images\",\n	\"shutdownImagesDir\": \"shutdown_images\",")
 	set(BOOT_BOOL_KEYS "\"useBootAndShutdownImages\": true,\n	\"useSystemBox\": true,")
-else()
+elseif(WIN32)
 	set(XP_BOOL_KEYS "\"useTts\": true,")
 endif()
 
@@ -222,20 +224,45 @@ add_custom_command(TARGET interact_box
 	COMMENT "Generating license and readme"	
 )
 
-if(EXISTS ${CMAKE_SOURCE_DIR}/pre_compiled/system_message_process/system_box.exe AND NSIS_ARG STREQUAL "IS_WIN98_BUILD")
+if (LINUX)
+	file(COPY ${CMAKE_SOURCE_DIR}/installer/install.sh DESTINATION ${CMAKE_BINARY_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/icon/interact_box.png DESTINATION ${CMAKE_BINARY_DIR}/icon)
+	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/interact_box_settings/icon/config_icon-linux.ico DESTINATION ${CMAKE_BINARY_DIR}/icon)
+	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/malware_date_settings/icon/malware_date_settings.ico DESTINATION ${CMAKE_BINARY_DIR}/icon)
+	file(COPY ${CMAKE_SOURCE_DIR}/src/interact_box.desktop DESTINATION ${CMAKE_BINARY_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/interact_box_settings/interact_box_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/malware_date_settings/malware_date_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
+endif()
+
+if(WIN32)
+	if(EXISTS ${CMAKE_SOURCE_DIR}/pre_compiled/system_message_process/system_box.exe AND NSIS_ARG STREQUAL "IS_WIN98_BUILD")
 		add_custom_command(TARGET interact_box
-		POST_BUILD
-		COMMAND makensis 
-		ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
-		COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
-	)
+			POST_BUILD
+			COMMAND makensis 
+			ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+			COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+		)
+	else()
+		add_custom_command(TARGET interact_box
+			POST_BUILD
+			COMMAND makensis 
+			ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
+			COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+		)
+	endif()
 else()
 	add_custom_command(TARGET interact_box
 		POST_BUILD
-		COMMAND makensis 
-		ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
-		COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
+		COMMAND tar
+		ARGS -C ${CMAKE_BINARY_DIR} --exclude=*CMake* --exclude=*cmake* -czf interact_box.tar.gz interact_box install.sh interact_box_extras/src/**/* icon/* *.desktop installer/interact_box_config.json installer/malware_with_date_specific_deployment.json
+		COMMENT "Generating tarball"
 	)
+endif()
+
+if (WIN32)
+	set(FILE_TO_BURN ${CMAKE_BINARY_DIR}/installer/setup.exe)
+else()
+	set(FILE_TO_BURN ${CMAKE_BINARY_DIR}/interact_box.tar.gz)
 endif()
 
 if (CREATE_ISO)
@@ -245,7 +272,7 @@ if (CREATE_ISO)
 		POST_BUILD
 		COMMAND rm ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso || true
 		COMMAND mkisofs 
-		ARGS -o ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso -J -R -V "${PRODUCT_FLAVOR}" ${CMAKE_BINARY_DIR}/installer/setup.exe
+		ARGS -o ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso -J -R -V "${PRODUCT_FLAVOR}" ${FILE_TO_BURN}
 		COMMENT "Generating ISO for ${PRODUCT_FLAVOR}"
 	)
 endif()

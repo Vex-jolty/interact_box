@@ -7,6 +7,8 @@
 	#include <arpa/inet.h>
 	#include <unistd.h>
 
+
+constexpr std::size_t HTTP_READ_BUFFER_SIZE = 8192;
 namespace Server {
 
 	class LinuxSocketBackend : public SocketBackend {
@@ -21,7 +23,7 @@ namespace Server {
 			void shutdown() override;
 
 		private:
-			int listenFd = -1;
+			int _listenFd = -1;
 	};
 
 } // namespace Server

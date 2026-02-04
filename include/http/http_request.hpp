@@ -32,11 +32,10 @@ namespace Server {
 				std::map<std::string, std::string> query;
 
 			private:
-				SOCKET _clientSocket;
-				std::string getMethod(std::string requestContent);
-				Json::Value getBody(std::string requestContent);
-				std::string getRoute(std::string requestContent);
-				std::smatch getRegexMatch(std::regex pattern, std::string input);
+				std::string getMethod(const std::string& requestContent);
+				Json::Value getBody(const std::string& requestContent);
+				std::string getRoute(const std::string& requestContent);
+				std::smatch getRegexMatch(std::regex pattern, const std::string& input);
 		};
 	}; // namespace Http
 } // namespace Server

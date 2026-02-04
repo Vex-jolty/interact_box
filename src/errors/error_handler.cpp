@@ -4,7 +4,7 @@ namespace Errors {
 	using namespace std;
 	ErrorHandler::ErrorHandler(
 		shared_ptr<Utils::LoggingUtil> loggingUtil,
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		wstring messageBoxPath
 #else
 		string messageBoxPath
@@ -20,7 +20,7 @@ namespace Errors {
 		);
 	}
 
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 	void ErrorHandler::handleError(wstring& e) {
 		string message = StringHelper::wideStringToString(e);
 		_loggingUtil->err(message);
@@ -68,7 +68,7 @@ namespace Errors {
 		showErrorBox(message);
 	}
 
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 	void ErrorHandler::showErrorBox(string message) {
 		Utils::MessageBoxUtil::createBox(
 			L"INTERACT BOX ERROR", StringHelper::stringToWideString(message), L"e", L"ok"

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Interact Box
+Exec=interact_box
+Comment=A tool to allow stream chatters to send specific commands to a PC
+Icon=interact_box
+Terminal=false
+Categories=Utility;

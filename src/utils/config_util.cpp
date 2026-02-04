@@ -7,7 +7,7 @@ namespace Utils {
 		try {
 			string contents = FileHelper::readFileAsString(configFileName);
 			Json::Value jsonContents = JsonHelper::parseJsonString(contents);
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			_host = JsonHelper::getJsonWideStringValue(jsonContents, "host");
 
 #else
@@ -34,7 +34,7 @@ namespace Utils {
 			_warnAboutUrlsInTerminal =
 				JsonHelper::getJsonBoolValue(jsonContents, "warnAboutUrlsInTerminal");
 
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			_useTts = JsonHelper::getJsonBoolValue(jsonContents, "useTts");
 			_wallpaperDir = JsonHelper::getJsonWideStringValue(jsonContents, "wallpaperDir");
 			_malwareDir = JsonHelper::getJsonWideStringValue(jsonContents, "malwareDir");
@@ -46,18 +46,20 @@ namespace Utils {
 #else
 			_wallpaperDir = JsonHelper::getJsonStringValue(jsonContents, "wallpaperDir");
 			_malwareDir = JsonHelper::getJsonStringValue(jsonContents, "malwareDir");
+	#ifdef WIN32
 			_bootImagesDir = JsonHelper::getJsonStringValue(jsonContents, "bootImagesDir");
 			_shutdownImagesDir = JsonHelper::getJsonStringValue(jsonContents, "shutdownImagesDir");
-
-			_musicExtensions = JsonHelper::getJsonStringArray(jsonContents, "musicExtensions");
-			_openableExtensions = JsonHelper::getJsonStringArray(jsonContents, "openableExtensions");
 			_useBootAndShutdownImages =
 				JsonHelper::getJsonBoolValue(jsonContents, "useBootAndShutdownImages");
 			_useSystemBox = JsonHelper::getJsonBoolValue(jsonContents, "useSystemBox");
+	#endif
+			_musicExtensions = JsonHelper::getJsonStringArray(jsonContents, "musicExtensions");
+			_openableExtensions = JsonHelper::getJsonStringArray(jsonContents, "openableExtensions");
 #endif
 			_loggingLevel =
 				static_cast<LoggingLevel>(JsonHelper::getJsonIntValue(jsonContents, "loggingLevel"));
 		} catch (InteractBoxException& e) {
+#ifdef WIN32
 			MessageBoxA(
 				NULL,
 				("Interact Box encountered the following error while reading your settings, and is unable "
@@ -66,6 +68,9 @@ namespace Utils {
 					.c_str(),
 				"Interact Box Fatal Error", MB_ICONERROR
 			);
+#else
+			cerr << e.what() << endl;
+#endif
 			exit(1);
 		}
 	}
@@ -108,7 +113,7 @@ namespace Utils {
 
 	bool ConfigUtil::getWarnAboutUrlsInTerminal() { return _warnAboutUrlsInTerminal; }
 
-#if WINVER > _WIN32_WINNT_NT4
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 	wstring ConfigUtil::getWallpaperDir() { return _wallpaperDir; }
 
 	wstring ConfigUtil::getMalwareDir() { return _malwareDir; }

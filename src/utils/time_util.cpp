@@ -11,6 +11,12 @@ namespace Utils {
 	}
 
 	void TimeUtil::setSystemDateTime(int year, int month, int day) {
+#ifdef __linux__
+		stringstream commandStream;
+		commandStream << "date -s " << year << "-" << month << "-" << day;
+		int returnCode = system(commandStream.str().c_str());
+		bool success = (returnCode == 0);
+#else
 		SYSTEMTIME sysTime;
 		ZeroMemory(&sysTime, sizeof(sysTime));
 		sysTime.wYear = year;
@@ -20,6 +26,7 @@ namespace Utils {
 		sysTime.wMinute = 0;
 		sysTime.wSecond = 1;
 		WINBOOL success = SetSystemTime(&sysTime);
+#endif
 		if (!success)
 			throw InteractBoxException(ErrorCodes::CannotSetSystemDateTime);
 	}

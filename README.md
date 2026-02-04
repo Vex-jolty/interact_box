@@ -82,6 +82,10 @@ Your properties should look like the image below:
 
 ![Screenshot of setup.exe properties, showing the KernelEx tab with "Use specific compatibility mode" enabled, the option "Windows 98 SE" picked, and the checkbox "Don't use these settings in child processes" checked](images/properties.jpg)
 
+## Supported Linux versions
+
+So far, *only Arch Linux & derivatives* are officially supported.
+
 ## Routes
 
 - /

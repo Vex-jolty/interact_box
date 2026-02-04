@@ -30,8 +30,6 @@ namespace Utils {
 			std::streambuf* _streamBuffer;
 #ifdef WIN32
 			HANDLE _fileHandle;
-#else
-			std::ofstream _fileHandle;
 #endif
 			LoggingLevel _loggingLevel;
 			std::string getLevelString(LoggingLevel level);

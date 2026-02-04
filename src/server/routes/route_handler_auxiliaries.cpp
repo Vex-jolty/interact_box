@@ -3,7 +3,9 @@
 namespace Server::Routes {
 	using namespace std;
 
-#if WINVER > _WIN32_WINNT_NT4
+#ifdef WIN32
+
+	#if WINVER > _WIN32_WINNT_NT4
 	void setSoundsFromJson(Json::Value jsonData, wstring packDir, vector<wstring> keys) {
 		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[StringHelper::wideStringToString(key)];
@@ -28,7 +30,7 @@ namespace Server::Routes {
 		}
 	}
 
-#else
+	#else
 	void setSoundsFromJson(Json::Value jsonData, string packDir, vector<string> keys) {
 		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[key];
@@ -52,12 +54,12 @@ namespace Server::Routes {
 				throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
 		}
 	}
-#endif
+	#endif
 
 	BOOL CALLBACK getOkButton(HWND hwnd, LPARAM lParam) {
 		try {
 			HWND* okButtonPtr = reinterpret_cast<HWND*>(lParam);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 			wchar_t name[256];
 			wchar_t text[256];
 			GetClassName(hwnd, name, sizeof(name));
@@ -73,7 +75,7 @@ namespace Server::Routes {
 			MessageBox(NULL, L"Failed during enumeration", L"", MB_ICONERROR);
 			return TRUE;
 		}
-#else
+	#else
 			char name[100];
 			char text[100];
 			GetClassNameA(hwnd, name, sizeof(name));
@@ -89,7 +91,7 @@ namespace Server::Routes {
 			MessageBoxA(NULL, "Failed during enumeration", "", MB_ICONERROR);
 			return TRUE;
 		}
-#endif
+	#endif
 	}
 
 	void* runThemeThread(void* arg) {
@@ -105,19 +107,19 @@ namespace Server::Routes {
 			fileUtil->openFile(file);
 			Sleep(1000);
 
-// Get window
-#if WINVER > _WIN32_WINNT_NT4
+	// Get window
+	#if WINVER > _WIN32_WINNT_NT4
 			HWND window = ProcessHelper::findDisplaySettingsWindow();
-#else
+	#else
 			HWND window = ProcessHelper::findMainWindow("C:\\PROGRAM FILES\\PLUS!\\THEMES.EXE");
-#endif
+	#endif
 			for (int i = 0; i < 5 && window == NULL; ++i) {
 				Sleep(500);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 				window = ProcessHelper::findDisplaySettingsWindow();
-#else
+	#else
 				window = ProcessHelper::findMainWindow("C:\\PROGRAM FILES\\PLUS!\\THEMES.EXE");
-#endif
+	#endif
 			}
 			WaitForInputIdle(window, INFINITE);
 			if (window == NULL)
@@ -135,26 +137,26 @@ namespace Server::Routes {
 			}
 		} catch (InteractBoxException& e) {
 			loggingUtil->err(e.what());
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 			Utils::MessageBoxUtil::createBox(
 				L"INTERACT BOX ERROR", StringHelper::stringToWideString(e.what()), L"e", L"ok"
 			);
-#else
+	#else
 			Utils::MessageBoxUtil::createBox("INTERACT BOX ERROR", e.what(), "e", "ok");
-#endif
+	#endif
 		} catch (exception& e) {
 			string errMessage = e.what();
 			loggingUtil->err(errMessage);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 			Utils::MessageBoxUtil::createBox(
 				L"INTERACT BOX ERROR",
 				L"Error while setting theme: " + StringHelper::stringToWideString(errMessage), L"e", L"ok"
 			);
-#else
+	#else
 			Utils::MessageBoxUtil::createBox(
 				"INTERACT BOX ERROR", "Error while setting theme: " + errMessage, "e", "ok"
 			);
-#endif
+	#endif
 		}
 		// Unlock and finish
 		// Outside try block to ensure unlocking even if error is thrown
@@ -162,7 +164,7 @@ namespace Server::Routes {
 		return nullptr;
 	}
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	void processBoxRequest(
 		wstring processName,
 		Json::Value jsonRequest,
@@ -186,7 +188,7 @@ namespace Server::Routes {
 		Utils::RegistryUtil::setNewKeyValue(hKey, topKey, mainKey, path);
 	}
 
-#else
+	#else
 
 	void processBoxRequest(
 		string processName,
@@ -211,5 +213,19 @@ namespace Server::Routes {
 		Utils::RegistryUtil::setNewKeyValue(hKey, topKey, mainKey, path);
 	}
 
+	#endif
+
+#else
+	void processBoxRequest(
+		string processName,
+		Json::Value jsonRequest,
+		shared_ptr<Utils::FileUtil> fileUtil
+	) {
+		string title = JsonHelper::getJsonStringValue(jsonRequest, "title");
+		string content = JsonHelper::getJsonStringValue(jsonRequest, "content");
+		string type = JsonHelper::getJsonStringValue(jsonRequest, "type");
+		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons");
+		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
+	}
 #endif
 } // namespace Server::Routes

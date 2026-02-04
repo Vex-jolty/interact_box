@@ -1,8 +1,9 @@
 // net/socket_backend_win.hpp
 #pragma once
 #ifdef WIN32
-	#include "socket_backend.hpp"
 	#include <winsock2.h>
+	#include "socket_backend.hpp"
+	#include "errors/interact_box_exceptions.hpp"
 	#include <ws2tcpip.h>
 
 namespace Server {
@@ -18,7 +19,7 @@ namespace Server {
 			void shutdown() override;
 
 		private:
-			SOCKET listenSocket = INVALID_SOCKET;
+			SOCKET _listenSocket = INVALID_SOCKET;
 	};
 
 } // namespace Server

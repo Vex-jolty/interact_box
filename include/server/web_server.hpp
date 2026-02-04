@@ -21,6 +21,9 @@
 #include "http/http_response.hpp"
 #include "errors/error_handler.hpp"
 #include "errors/interact_box_exceptions.hpp"
+#include "socket_backend/socket_backend.hpp"
+#include "socket_backend/socket_backend_windows.hpp"
+#include "socket_backend/socket_backend_linux.hpp"
 #ifdef WIN32
 	#ifndef _WS2TCPIP_H_
 		#include <ws2tcpip.h>
@@ -43,7 +46,7 @@ namespace Server {
 				std::unique_ptr<Errors::ErrorHandler> errorHandler
 			);
 			void start();
-			void respondWith(Http::HttpResponse response);
+			void respondWith(int clientFd, Http::HttpResponse response);
 			void addRoute(Http::HttpRoute route);
 			void addRoutes(std::vector<Http::HttpRoute> routes);
 			void serverAbort();
@@ -56,20 +59,18 @@ namespace Server {
 			std::string _serverHost;
 #endif
 			int _port;
-			SOCKET _listeningSocket;
-			SOCKET _clientSocket;
+			std::unique_ptr<SocketBackend> _socket;
 			std::shared_ptr<Utils::FileUtil> _fileUtil;
 			std::shared_ptr<Utils::LoggingUtil> _loggingUtil;
 			std::vector<Http::HttpRoute> _routes;
 			std::unique_ptr<Errors::ErrorHandler> _errorHandler;
 
 			static void* handleRequest(void* arg);
-			void sendHttpResponse(const std::string& response);
-			std::string getClientIpAddress();
 	};
 
 	struct WebServerAndRequest {
 			WebServer* server;
 			Http::HttpRequest* request;
+			int clientFd;
 	};
 } // namespace Server

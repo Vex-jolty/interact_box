@@ -27,7 +27,7 @@ namespace Utils {
 #else
 			static pid_t openShell(
 				const std::string& path,
-				std::optional<const std::string&> parameters = std::nullopt
+				std::optional<std::string> parameters = std::nullopt
 			);
 #endif
 	};

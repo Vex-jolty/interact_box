@@ -1,6 +1,8 @@
 #include "threads/tray_thread.hpp"
 
 /* cSpell:disable */
+
+#ifdef WIN32
 namespace Threads {
 	using namespace Server;
 	using namespace std;
@@ -23,13 +25,13 @@ namespace Threads {
 					case WM_RBUTTONUP: {
 						HMENU hMenu = CreatePopupMenu();
 						if (hMenu) {
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 							InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, L"Settings");
 							InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, L"Exit");
-#else
+	#else
 							InsertMenu(hMenu, 2, MF_BYCOMMAND, settingsId, "Settings");
 							InsertMenu(hMenu, -1, MF_BYCOMMAND, exitId, "Exit");
-#endif
+	#endif
 							POINT pt;
 							GetCursorPos(&pt);
 							SetForegroundWindow(hwnd);
@@ -69,12 +71,12 @@ namespace Threads {
 		nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 		nid.uCallbackMessage = TRAY_MESSAGE;
 		nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-#if WINVER == _WIN32_WINNT_NT4
+	#if WINVER == _WIN32_WINNT_NT4
 		nid.uVersion = NOTIFYICON_VERSION;
 		strcpy(nid.szTip, "Interact Box");
-#else
+	#else
 		wcscpy(nid.szTip, L"Interact Box");
-#endif
+	#endif
 		HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 		if (!hIcon) {
 			hIcon = LoadIcon(NULL, IDI_APPLICATION);
@@ -84,7 +86,7 @@ namespace Threads {
 		Shell_NotifyIcon(NIM_ADD, &nid);
 	}
 
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 	void TrayThread::notify(HWND hwnd, wstring message) {
 		NOTIFYICONDATA nid = {};
 		nid.cbSize = sizeof(NOTIFYICONDATA);
@@ -99,7 +101,7 @@ namespace Threads {
 		nid.dwInfoFlags = NIIF_INFO;
 		Shell_NotifyIcon(NIM_MODIFY, &nid);
 	}
-#endif
+	#endif
 
 	void TrayThread::removeTrayIcon(HWND hwnd) {
 		NOTIFYICONDATA nid = {};
@@ -112,7 +114,7 @@ namespace Threads {
 
 	void TrayThread::openSettings() {
 		auto workingDir = FileHelper::getWorkingDirectory();
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		wstring settingsPath = L"interact_box_settings.exe";
 		try {
 			Utils::ShellUtil::openShell(settingsPath, L"open", workingDir);
@@ -122,7 +124,7 @@ namespace Threads {
 				L"ERROR", StringHelper::stringToWideString(e.what()), L"e", L"ok"
 			);
 		}
-#else
+	#else
 		string settingsPath = "interact_box_settings.exe";
 		try {
 			Utils::ShellUtil::openShell(settingsPath, "open", workingDir);
@@ -130,16 +132,16 @@ namespace Threads {
 		} catch (InteractBoxException& e) {
 			Utils::MessageBoxUtil::createBox("ERROR", e.what(), "e", "ok");
 		}
-#endif
+	#endif
 	}
 
 	void* TrayThread::trayIconThread(void* arg) {
 		ThreadData* threadData = static_cast<ThreadData*>(arg);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		const wchar_t CLASS_NAME[] = L"HiddenWindowClass";
-#else
+	#else
 		const char CLASS_NAME[] = "HiddenWindowClass";
-#endif
+	#endif
 		WNDCLASS wc = {};
 
 		wc.lpfnWndProc = windowProc;
@@ -150,11 +152,11 @@ namespace Threads {
 
 		HWND hwnd = CreateWindowEx(
 			0, CLASS_NAME,
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 			L"Hidden Window",
-#else
+	#else
 			"Hidden Window",
-#endif
+	#endif
 			0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL,
 			threadData->hInstance, NULL
 		);
@@ -165,11 +167,11 @@ namespace Threads {
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(threadData->server));
 		threadData->hwndPtr = &hwnd;
 		addTrayIcon(hwnd);
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 		notify(hwnd, L"Interact Box is now online!");
-#else
+	#else
 		Utils::MessageBoxUtil::createBox("Interact Box", "Interact Box is now online", "i", "ok");
-#endif
+	#endif
 		MSG msg = {};
 		while (GetMessage(&msg, NULL, 0, 0)) {
 			TranslateMessage(&msg);
@@ -182,3 +184,5 @@ namespace Threads {
 		return NULL;
 	}
 } // namespace Threads
+
+#endif

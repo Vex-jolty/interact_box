@@ -1,10 +1,11 @@
 #pragma once
 #include "utils.hpp"
 #include "logging_util.hpp"
+#ifdef WIN32
 namespace Utils {
 	class RegistryUtil {
 		public:
-#if WINVER > _WIN32_WINNT_NT4
+	#if WINVER > _WIN32_WINNT_NT4
 			static bool setNewKeyValue(
 				HKEY topRegKeyToOpen,
 				std::wstring regKeyNameToOpen,
@@ -33,7 +34,7 @@ namespace Utils {
 				Utils::LoggingUtil* loggingUtil,
 				int startIndex = 0
 			);
-#else
+	#else
 			static bool setNewKeyValue(
 				HKEY topRegKeyToOpen,
 				std::string regKeyNameToOpen,
@@ -51,6 +52,8 @@ namespace Utils {
 				Utils::LoggingUtil* loggingUtil,
 				int startIndex = 0
 			);
-#endif
+	#endif
 	};
 } // namespace Utils
+
+#endif

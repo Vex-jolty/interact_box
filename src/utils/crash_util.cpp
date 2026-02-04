@@ -58,6 +58,7 @@ namespace Utils {
 
 	#endif
 #else
+		this_thread::sleep_for(chrono::milliseconds(200));
 		system("echo 1 > /proc/sys/kernel/sysrq");
 #endif
 		return nullptr;

@@ -411,5 +411,47 @@ int main(int argc, char* argv[]) {
 }
 
 #else
+int main(int argc, char* argv[]) {
+	try {
+		cout << "Starting..." << "\n";
+		Utils::ConfigUtil configUtil("/etc/interact_box/interact_box_config.json");
+		cout << "Got configs" << "\n";
+		string host = configUtil.getHost();
+		int port = configUtil.getPort();
+		string wallDir = StringHelper::toLowercase(configUtil.getWallpaperDir());
+		string malwareDir = StringHelper::toLowercase(configUtil.getMalwareDir());
+		vector<string> openableExtensions = configUtil.getOpenableExtensions();
+		vector<string> musicExtensions = configUtil.getMusicExtensions();
 
+		cout << "Starting file util" << "\n";
+		Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
+		string logFileName = "/etc/interact_box/" +
+			Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
+		string msgBoxProcessName = fileUtil.workingDirectory + "/message_box_process";
+		Utils::LoggingUtil loggingUtil(logFileName, configUtil.getLoggingLevel());
+		cout << "Started file util and logging util" << "\n";
+		shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);
+		shared_ptr<Utils::FileUtil> sharedFileUtil = make_shared<Utils::FileUtil>(fileUtil);
+		Errors::ErrorHandler errorHandler(sharedLoggingUtil, msgBoxProcessName);
+		unique_ptr<Errors::ErrorHandler> errorHandlerPtr =
+			make_unique<Errors::ErrorHandler>(errorHandler);
+
+		Server::WebServer webServer =
+			WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
+		Server::Routes::RouteHandler routeHandler(
+			configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName
+		);
+		auto routes = routeHandler.getRoutes();
+		for (auto& route: routes) {
+			cout << route.getPath() << "\n";
+		}
+		webServer.addRoutes(routes);
+		webServer.start();
+	} catch (exception& e) {
+		cerr << e.what() << "\n";
+		return 1;
+	}
+
+	return 0;
+}
 #endif

@@ -11,9 +11,8 @@ namespace Utils {
 		LoggingLevel loggingLevel
 	) {
 		bool fileExists = FileHelper::checkIfFileExists(fileName);
+#ifdef WIN32
 		_fileHandle = FileHelper::makeFile(fileName, !fileExists);
-#ifdef __linux__
-		_fileHandle.close();
 #endif
 		_fileName = fileName;
 		_loggingLevel = loggingLevel;
@@ -38,7 +37,9 @@ namespace Utils {
 			return;
 		string levelString = getLevelString(level);
 		string dateTimeString = "[" + TimeUtil::getAndFormatCurrentTime("%Y-%m-%d %H:%M") + "]";
-
+#ifdef WIN32
+		boost::replace_all(content, "\n", "\r\n");
+#endif
 		if (!content.ends_with("\r\n"))
 			content += "\r\n";
 #ifdef WIN32
