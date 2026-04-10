@@ -153,11 +153,6 @@ namespace Server {
 	}
 	void WebServer::serverAbort() {
 		abortNow.store(true);
-#if WIN32
-		if (_listeningSocket != INVALID_SOCKET) {
-			closesocket(_listeningSocket);
-			_listeningSocket = INVALID_SOCKET;
-		}
-#endif
+		_socket->shutdown();
 	}
 } // namespace Server
