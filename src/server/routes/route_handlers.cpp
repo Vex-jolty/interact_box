@@ -268,16 +268,17 @@ namespace Server::Routes {
 			"/tts",
 			"POST",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
-#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 				string input = JsonHelper::getJsonStringValue(req->body, "input");
+#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 				Utils::ShellUtil::openShell(
 					L"tts_process.exe", L"open", _fileUtil->workingDirectory,
 					L"\"" + StringHelper::stringToWideString(input) + L"\""
 				);
-				res->setResponse(nullopt, req->body, HttpStatus::OK);
 #else
-			throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				if (system("which spd-say") != 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, "spd-say");
+				system(("spd-say " + input).c_str());
 #endif
+				res->setResponse(nullopt, req->body, HttpStatus::OK);
 			},
 			_configUtil.getUseTts()
 		),
