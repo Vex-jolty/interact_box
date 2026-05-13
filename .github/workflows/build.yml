@@ -13,12 +13,25 @@ jobs:
         include:
         - target: win98
           toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+          artifact_path: "installer/*.exe"
 
         - target: winxp
           toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+          artifact_path: "installer/*.exe"
 
         - target: vista
           toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
+          artifact_path: "installer/*.exe"
+
+        - target: linux-gtk
+          toolchain: ""
+          gui: gtk3
+          artifact_path: "*.tar.gz"
+
+        - target: linux-qt
+          toolchain: ""
+          gui: qt
+          artifact_path: "*.tar.gz"
 
     steps:
       - name: Log in to Docker Hub
@@ -35,14 +48,22 @@ jobs:
 
       - name: Configure
         run: |
+          BUILD_FLAGS=""
+
+          # On Windows, specify toolchain and version. On Linux, specify GUI toolkit
+          if [[ "${{ matrix.target }}" == win* ]]; then
+            BUILD_FLAGS="-DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} -DTARGET_WINDOWS_VERSION=${{ matrix.target }}"
+            
+          else
+            BUILD_FLAGS="-DTARGET_LINUX_GUI=${{ matrix.gui }}"
+          fi
           docker run --rm \
             -v ${{ github.workspace }}:/src \
             -w /src \
             ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
             cmake -B build-${{ matrix.target }} \
                   -S . \
-                  -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} \
-                  -DTARGET_WINDOWS_VERSION=${{ matrix.target }} \
+                  $BUILD_FLAGS \
                   -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
@@ -58,4 +79,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: interactbox-${{ matrix.target }}
-          path: build-${{ matrix.target }}/installer/*.exe
+          path: build-${{ matrix.target }}/${{ matrix.artifact_path }}
