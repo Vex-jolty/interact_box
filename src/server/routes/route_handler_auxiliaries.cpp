@@ -107,19 +107,22 @@ namespace Server::Routes {
 			fileUtil->openFile(file);
 			Sleep(1000);
 
-	// Get window
-	#if WINVER > _WIN32_WINNT_NT4
+	// Windows 7 seems to not open a display settings window, so we're skipping this logic for it
+
+	#if WINVER < _WIN32_WINNT_7
+
+		#if WINVER > _WIN32_WINNT_NT4
 			HWND window = ProcessHelper::findDisplaySettingsWindow();
-	#else
+		#else
 			HWND window = ProcessHelper::findMainWindow("C:\\PROGRAM FILES\\PLUS!\\THEMES.EXE");
-	#endif
+		#endif
 			for (int i = 0; i < 5 && window == NULL; ++i) {
 				Sleep(500);
-	#if WINVER > _WIN32_WINNT_NT4
+		#if WINVER > _WIN32_WINNT_NT4
 				window = ProcessHelper::findDisplaySettingsWindow();
-	#else
+		#else
 				window = ProcessHelper::findMainWindow("C:\\PROGRAM FILES\\PLUS!\\THEMES.EXE");
-	#endif
+		#endif
 			}
 			WaitForInputIdle(window, INFINITE);
 			if (window == NULL)
@@ -135,6 +138,7 @@ namespace Server::Routes {
 			while (IsWindow(window)) {
 				Sleep(500);
 			}
+	#endif
 		} catch (InteractBoxException& e) {
 			loggingUtil->err(e.what());
 	#if WINVER > _WIN32_WINNT_NT4
@@ -170,10 +174,10 @@ namespace Server::Routes {
 		Json::Value jsonRequest,
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
-		wstring title = JsonHelper::getJsonWideStringValue(jsonRequest, L"title");
-		wstring content = JsonHelper::getJsonWideStringValue(jsonRequest, L"content");
-		wstring type = JsonHelper::getJsonWideStringValue(jsonRequest, L"type");
-		wstring buttons = JsonHelper::getJsonWideStringValue(jsonRequest, L"buttons");
+		wstring title = JsonHelper::getJsonWideStringValue(jsonRequest, L"title", "Interact Box");
+		wstring content = JsonHelper::getJsonWideStringValue(jsonRequest, L"content", jsonRequest.toStyledString());
+		wstring type = JsonHelper::getJsonWideStringValue(jsonRequest, L"type", "i");
+		wstring buttons = JsonHelper::getJsonWideStringValue(jsonRequest, L"buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
 	}
 
@@ -195,10 +199,10 @@ namespace Server::Routes {
 		Json::Value jsonRequest,
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
-		string title = JsonHelper::getJsonStringValue(jsonRequest, "title");
-		string content = JsonHelper::getJsonStringValue(jsonRequest, "content");
-		string type = JsonHelper::getJsonStringValue(jsonRequest, "type");
-		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons");
+		string title = JsonHelper::getJsonStringValue(jsonRequest, "title", "Interact Box");
+		string content = JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
+		string type = JsonHelper::getJsonStringValue(jsonRequest, "type", "i");
+		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
 	}
 
@@ -221,10 +225,10 @@ namespace Server::Routes {
 		Json::Value jsonRequest,
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
-		string title = JsonHelper::getJsonStringValue(jsonRequest, "title");
-		string content = JsonHelper::getJsonStringValue(jsonRequest, "content");
-		string type = JsonHelper::getJsonStringValue(jsonRequest, "type");
-		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons");
+		string title = JsonHelper::getJsonStringValue(jsonRequest, "title", "Interact Box");
+		string content = JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
+		string type = JsonHelper::getJsonStringValue(jsonRequest, "type", "i");
+		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
 	}
 #endif
