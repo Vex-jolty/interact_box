@@ -2,6 +2,7 @@ build*/
 .vscode/
 banned_words.txt
 *.png
+!interact_box.png
 questions.json
 questions.h
 audio/
