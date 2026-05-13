@@ -51,7 +51,7 @@ jobs:
           BUILD_FLAGS=""
 
           # On Windows, specify toolchain and version. On Linux, specify GUI toolkit
-          if [[ "${{ matrix.target }}" == win* ]]; then
+          if [[ "${{ matrix.target }}" != linux* ]]; then
             BUILD_FLAGS="-DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} -DTARGET_WINDOWS_VERSION=${{ matrix.target }}"
             
           else
