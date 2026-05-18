@@ -49,9 +49,11 @@ jobs:
       - name: Configure
         run: |
           BUILD_FLAGS=""
+          TOOLKIT=""
 
           # On Windows, specify toolchain and version. On Linux, specify GUI toolkit
           if [[ "${{ matrix.target }}" != linux* ]]; then
+            TOOLKIT="-DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }}"
             BUILD_FLAGS="-DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }} -DTARGET_WINDOWS_VERSION=${{ matrix.target }}"
             
           else
@@ -73,6 +75,8 @@ jobs:
             -w /src \
             ${{ secrets.DOCKERHUB_USERNAME }}/mingw_for_interact_box:latest \
             cmake --build build-${{ matrix.target }} \
+              $TOOLKIT \
+              -G Ninja \
               --parallel
 
       - name: Upload artifacts
