@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(InteractBox VERSION 1.2.1)
+project(interact_box VERSION 1.2.1)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -69,7 +69,7 @@ if (WIN32)
 endif()
 
 add_executable(
-	interact_box src/main.cpp
+	${PROJECT_NAME} src/main.cpp
 	${SERVER_FILES}
 	${UTIL_FILES}
 	src/errors/error_handler.cpp
@@ -95,25 +95,25 @@ if (WIN32 AND NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_WRAPPERS)
 endif()
 
 add_dependencies(
-	interact_box
+	${PROJECT_NAME}
 	${MAIN_DEPENDENCIES}
 )
 
-target_include_directories(interact_box PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/interact_box_libs/include
 	${CMAKE_SOURCE_DIR}/interact_box_extras/include
 )
 
-target_link_libraries(interact_box PRIVATE platform_config errors string_helper file_helper json_helper process_helper)
+target_link_libraries(${PROJECT_NAME} PRIVATE platform_config errors string_helper file_helper json_helper process_helper)
 if (WIN32)
-	target_link_libraries(interact_box PRIVATE ws2_32 wininet version gdi32 dbghelp)
+	target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 wininet version gdi32 dbghelp)
 	if (NOT TARGET_WINDOWS_VERSION IN_LIST VERSIONS_THAT_REQUIRE_PTHREAD9X)
-		target_link_libraries(interact_box PRIVATE wbemuuid)
+		target_link_libraries(${PROJECT_NAME} PRIVATE wbemuuid)
 	endif()
 endif()
 
-link_base_libs(interact_box ${TARGET_WINDOWS_VERSION} TRUE)
+link_base_libs(${PROJECT_NAME} ${TARGET_WINDOWS_VERSION} TRUE)
 
 string(REPLACE
 	"." "," VERSION_STRING ${CMAKE_PROJECT_VERSION}
@@ -129,21 +129,21 @@ configure_file(
 	@ONLY
 )
 
-target_sources(interact_box PRIVATE ${OUT_RC})
+target_sources(${PROJECT_NAME} PRIVATE ${OUT_RC})
 
-target_compile_options(interact_box PRIVATE
+target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<CONFIG:Debug>:-g -gdwarf-4 -O0 -fno-omit-frame-pointer>
 	-fpermissive
 )
 
-target_link_options(interact_box PRIVATE
+target_link_options(${PROJECT_NAME} PRIVATE
 	$<$<CONFIG:Debug>:-g>
 )
 
 configure_package_config_file(
 	cmake/InteractBoxConfig.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/InteractBoxConfig.cmake
-	INSTALL_DESTINATION lib/cmake/InteractBox
+	INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
 )
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/malware_with_date_specific_deployment.json)
@@ -217,7 +217,7 @@ configure_file(
 	@ONLY
 )
 
-add_custom_command(TARGET interact_box
+add_custom_command(TARGET ${PROJECT_NAME}
 	POST_BUILD
 	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/README.md -o ${CMAKE_BINARY_DIR}/installer/README.rtf
 	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/LICENSE.md -o ${CMAKE_BINARY_DIR}/installer/LICENSE.rtf
@@ -226,24 +226,24 @@ add_custom_command(TARGET interact_box
 
 if (LINUX)
 	file(COPY ${CMAKE_SOURCE_DIR}/installer/install.sh DESTINATION ${CMAKE_BINARY_DIR})
-	file(COPY ${CMAKE_SOURCE_DIR}/icon/interact_box.png DESTINATION ${CMAKE_BINARY_DIR}/icon)
+	file(COPY ${CMAKE_SOURCE_DIR}/icon/${PROJECT_NAME}.png DESTINATION ${CMAKE_BINARY_DIR}/icon)
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/interact_box_settings/icon/config_icon-linux.ico DESTINATION ${CMAKE_BINARY_DIR}/icon)
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/malware_date_settings/icon/malware_date_settings.ico DESTINATION ${CMAKE_BINARY_DIR}/icon)
-	file(COPY ${CMAKE_SOURCE_DIR}/src/interact_box.desktop DESTINATION ${CMAKE_BINARY_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/src/${PROJECT_NAME}.desktop DESTINATION ${CMAKE_BINARY_DIR})
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/interact_box_settings/interact_box_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/malware_date_settings/malware_date_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
 endif()
 
 if(WIN32)
 	if(EXISTS ${CMAKE_SOURCE_DIR}/pre_compiled/system_message_process/system_box.exe AND NSIS_ARG STREQUAL "IS_WIN98_BUILD")
-		add_custom_command(TARGET interact_box
+		add_custom_command(TARGET ${PROJECT_NAME}
 			POST_BUILD
 			COMMAND makensis 
 			ARGS -D${NSIS_ARG}=1 -DUSE_PRE_COMPILED_EXES=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
 			COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
 		)
 	else()
-		add_custom_command(TARGET interact_box
+		add_custom_command(TARGET ${PROJECT_NAME}
 			POST_BUILD
 			COMMAND makensis 
 			ARGS -D${NSIS_ARG}=1 ${CMAKE_BINARY_DIR}/installer/install.nsi
@@ -251,10 +251,10 @@ if(WIN32)
 		)
 	endif()
 else()
-	add_custom_command(TARGET interact_box
+	add_custom_command(TARGET ${PROJECT_NAME}
 		POST_BUILD
 		COMMAND tar
-		ARGS -C ${CMAKE_BINARY_DIR} --exclude=*CMake* --exclude=*cmake* -czf interact_box.tar.gz interact_box install.sh interact_box_extras/src/**/* icon/* *.desktop installer/interact_box_config.json installer/malware_with_date_specific_deployment.json
+		ARGS -C ${CMAKE_BINARY_DIR} --exclude=*CMake* --exclude=*cmake* -czf ${PROJECT_NAME}.tar.gz ${PROJECT_NAME} install.sh interact_box_extras/src/**/* icon/* *.desktop installer/interact_box_config.json installer/malware_with_date_specific_deployment.json
 		COMMENT "Generating tarball"
 	)
 endif()
@@ -262,13 +262,13 @@ endif()
 if (WIN32)
 	set(FILE_TO_BURN ${CMAKE_BINARY_DIR}/installer/setup.exe)
 else()
-	set(FILE_TO_BURN ${CMAKE_BINARY_DIR}/interact_box.tar.gz)
+	set(FILE_TO_BURN ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.tar.gz)
 endif()
 
 if (CREATE_ISO)
 	string(REPLACE " " "_" ISO_NAME ${PRODUCT_FLAVOR})
 	add_custom_command(
-		TARGET interact_box
+		TARGET ${PROJECT_NAME}
 		POST_BUILD
 		COMMAND rm ${CMAKE_BINARY_DIR}/${ISO_NAME}.iso || true
 		COMMAND mkisofs 

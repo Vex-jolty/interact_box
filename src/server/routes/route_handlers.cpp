@@ -275,8 +275,7 @@ namespace Server::Routes {
 					L"\"" + StringHelper::stringToWideString(input) + L"\""
 				);
 #else
-				if (system("which spd-say") != 0) throw InteractBoxException(ErrorCodes::NoSuchFiles, "spd-say");
-				system(("spd-say " + input).c_str());
+				system(("tts_process " + input).c_str());
 #endif
 				res->setResponse(nullopt, req->body, HttpStatus::OK);
 			},
