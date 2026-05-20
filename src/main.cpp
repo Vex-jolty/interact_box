@@ -414,7 +414,7 @@ int main(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
 	try {
 		cout << "Starting..." << "\n";
-		Utils::ConfigUtil configUtil("/etc/interact_box/interact_box_config.json");
+		Utils::ConfigUtil configUtil("/etc/interact-box/interact_box_config.json");
 		cout << "Got configs" << "\n";
 		string host = configUtil.getHost();
 		int port = configUtil.getPort();
@@ -425,7 +425,7 @@ int main(int argc, char* argv[]) {
 
 		cout << "Starting file util" << "\n";
 		Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
-		string logFileName = "/etc/interact_box/" +
+		string logFileName = "/etc/interact-box/" +
 			Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
 		string msgBoxProcessName = fileUtil.workingDirectory + "/message_box_process";
 		Utils::LoggingUtil loggingUtil(logFileName, configUtil.getLoggingLevel());
