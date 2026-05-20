@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,27 +14,27 @@ jobs:
     strategy:
       matrix:
         include:
-        - target: win98
-          toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
-          artifact_path: "installer/*.exe"
+          - target: win98
+            toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+            artifact_path: 'installer/*.exe'
 
-        - target: winxp
-          toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
-          artifact_path: "installer/*.exe"
+          - target: winxp
+            toolchain: /opt/cmake/toolchains/win32_mingw_13.cmake
+            artifact_path: 'installer/*.exe'
 
-        - target: vista
-          toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
-          artifact_path: "installer/*.exe"
+          - target: vista
+            toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
+            artifact_path: 'installer/*.exe'
 
-        - target: linux-gtk
-          toolchain: ""
-          gui: gtk3
-          artifact_path: "*.tar.gz"
+          - target: linux-gtk
+            toolchain: ''
+            gui: gtk3
+            artifact_path: 'interact_box.tar.gz'
 
-        - target: linux-qt
-          toolchain: ""
-          gui: qt
-          artifact_path: "*.tar.gz"
+          - target: linux-qt
+            toolchain: ''
+            gui: qt
+            artifact_path: 'interact_box.tar.gz'
 
     steps:
       - name: Log in to Docker Hub
@@ -44,7 +47,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
 
       - name: Configure
         run: |

@@ -34,7 +34,7 @@ namespace Utils {
 		);
 		ProcessHelper::setToForeground(workingDir + "\\" + processName);
 	#else
-		string processName = "message_box_process";
+		string processName = "interact-box-message-box";
 		string path = workingDir + "/" + processName;
 		string args = " --title " + getParsedString(title) + " --content " + getParsedString(content) +
 			" --type " + getParsedString(type) + " --buttons \"" + getParsedString(buttons) + "\"";

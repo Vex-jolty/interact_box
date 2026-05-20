@@ -275,7 +275,7 @@ namespace Server::Routes {
 					L"\"" + StringHelper::stringToWideString(input) + L"\""
 				);
 #else
-				system(("tts_process " + input).c_str());
+				system(("interact-box-tts " + input).c_str());
 #endif
 				res->setResponse(nullopt, req->body, HttpStatus::OK);
 			},
@@ -320,7 +320,7 @@ namespace Server::Routes {
 				string triviaGamePath = _fileUtil->workingDirectory + "\\trivia_game.exe";
 	#endif
 #else
-				string triviaGamePath = _fileUtil->workingDirectory + "/trivia_game";
+				string triviaGamePath = _fileUtil->workingDirectory + "/interact-box-trivia-game";
 #endif
 				_fileUtil->openFile(triviaGamePath);
 				ProcessHelper::setToForeground(triviaGamePath);
