@@ -16,8 +16,9 @@ namespace Utils {
 
 	wstring MessageBoxUtil::getParsedString(wstring input) {
 		wstring quotes = L"\"";
-		if (input.find(L' ') == wstring::npos ||
-				(input.starts_with(quotes) && input.ends_with(quotes))) {
+		if (
+			input.find(L' ') == wstring::npos || (input.starts_with(quotes) && input.ends_with(quotes))
+		) {
 			return input;
 		}
 		return quotes + input + quotes;
@@ -38,7 +39,9 @@ namespace Utils {
 		string path = workingDir + "/" + processName;
 		string args = " --title " + getParsedString(title) + " --content " + getParsedString(content) +
 			" --type " + getParsedString(type) + " --buttons \"" + getParsedString(buttons) + "\"";
-		system((path + args + " &").c_str());
+		int result = system((path + args + " &").c_str());
+		if (result != 0)
+			throw InteractBoxException(ErrorCodes::InvalidJSON);
 	#endif
 	}
 

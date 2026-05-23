@@ -26,7 +26,13 @@ namespace Server::Http {
 		}
 		_statusCode = statusCode.value_or(HttpStatus::OK);
 	}
+	
 	bool HttpResponse::isUnset() { return _body.empty() && _statusCode < 100; }
+	
+	bool HttpResponse::isOk() {
+		return _statusCode < 400;
+	}
+	
 	string HttpResponse::toString() {
 		const string statusCodeString = to_string(_statusCode);
 		const string fullStatusString = statusCodeString + " " + HttpStatus::reasonPhrase(_statusCode);

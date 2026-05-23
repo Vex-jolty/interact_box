@@ -1,15 +1,10 @@
 #pragma once
-#ifndef _GLIBCXX_MAP
-	#include <map>
-#endif
-#ifndef _GLIBCXX_STRING
-	#include <string>
-#endif
-#ifndef _GLIBCXX_OPTIONAL
-	#include <optional>
-#endif
+#include <map>
+#include <string>
+#include <optional>
 #ifdef WIN32
 	#include <winsock2.h>
+	#include <windows.h>
 #endif
 #include <boost/algorithm/string.hpp>
 #include "http_status_codes.h"
@@ -32,6 +27,7 @@ namespace Server {
 				);
 				bool isUnset();
 				std::string toString();
+				bool isOk();
 
 			private:
 				std::map<std::string, std::string> _headers;

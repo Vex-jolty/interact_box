@@ -1,19 +1,13 @@
 #pragma once
 #ifdef WIN32
-	#ifndef _WINSOCK2API_
-		#include <winsock2.h>
-	#endif
+	#include <winsock2.h>
+	#include <windows.h>
+	#include <ws2tcpip.h>
 #endif
-#ifndef _GLIBCXX_STRING
-	#include <string>
-#endif
-#ifndef _GLIBCXX_IOSTREAM
-	#include <iostream>
-#endif
+#include <string>
+#include <iostream>
 #include "http/http_response.hpp"
-#ifndef _GLIBCXX_VECTOR
-	#include <vector>
-#endif
+#include <vector>
 #include "../utils/file_util.hpp"
 #include "../utils/logging_util.hpp"
 #include "http/http_request.hpp"
@@ -24,11 +18,6 @@
 #include "socket_backend/socket_backend.hpp"
 #include "socket_backend/socket_backend_windows.hpp"
 #include "socket_backend/socket_backend_linux.hpp"
-#ifdef WIN32
-	#ifndef _WS2TCPIP_H_
-		#include <ws2tcpip.h>
-	#endif
-#endif
 #include <atomic>
 
 namespace Server {

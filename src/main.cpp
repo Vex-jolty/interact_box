@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
 		Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
 		string logFileName = "/etc/interact-box/" +
 			Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
-		string msgBoxProcessName = fileUtil.workingDirectory + "/message_box_process";
+		string msgBoxProcessName = fileUtil.workingDirectory + "/interact-box-message-box";
 		Utils::LoggingUtil loggingUtil(logFileName, configUtil.getLoggingLevel());
 		cout << "Started file util and logging util" << "\n";
 		shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);

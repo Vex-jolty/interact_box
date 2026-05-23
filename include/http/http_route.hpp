@@ -1,7 +1,5 @@
 #pragma once
-#ifndef _GLIBCXX_STRING
-	#include <string>
-#endif
+#include <string>
 #include <optional>
 #include "http_request.hpp"
 #include "http_response.hpp"

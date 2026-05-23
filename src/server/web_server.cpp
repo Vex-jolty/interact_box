@@ -121,18 +121,25 @@ namespace Server {
 			_loggingUtil->info("Client IP: " + clientIp);
 			_loggingUtil->info(requestData);
 
-			Http::HttpRequest* request = new Http::HttpRequest(requestData);
-			cout << request->method << "\n" << request->route << "\n";
+			Http::HttpRequest* request = new Http::HttpRequest();
+			try {
+				request->parseContent(requestData);
+				cout << request->method << "\n" << request->route << "\n";
 
-			WebServerAndRequest ctx;
-			ctx.server = this;
-			ctx.request = request;
-			ctx.clientFd = clientFd;
+				WebServerAndRequest ctx;
+				ctx.server = this;
+				ctx.request = request;
+				ctx.clientFd = clientFd;
 
-			pthread_t worker;
-			pthread_create(&worker, nullptr, &WebServer::handleRequest, &ctx);
-			pthread_join(worker, nullptr);
-
+				pthread_t worker;
+				pthread_create(&worker, nullptr, &WebServer::handleRequest, &ctx);
+				pthread_join(worker, nullptr);
+			} catch (HttpStatus::Code& c) {
+				_errorHandler->handleError(c, request->route);
+				Http::HttpResponse response;
+				response.setResponse(nullopt, HttpStatus::reasonPhrase(c), c);
+				respondWith(clientFd, response);
+			}
 			_socket->closeClient(clientFd);
 		} while (!abortNow.load());
 
@@ -140,7 +147,11 @@ namespace Server {
 	}
 
 	void WebServer::respondWith(int clientFd, Http::HttpResponse response) {
-		_loggingUtil->debug("Response:\n" + response.toString());
+		if (!response.isOk()) {
+			_loggingUtil->err("Bad response:\n" + response.toString());
+		} else {
+			_loggingUtil->debug("Response:\n" + response.toString());
+		}
 		_socket->sendData(clientFd, response.toString());
 	}
 

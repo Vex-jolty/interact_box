@@ -2,9 +2,16 @@
 
 namespace Server::Http {
 	using namespace std;
-	HttpRequest::HttpRequest(string requestContent) {
+	HttpRequest::HttpRequest() {
+		method = "UNKNOWN";
+		route = "UNKNOWN";
+		body = "";
+	}
+
+	void HttpRequest::parseContent(string requestContent) {
 		method = getMethod(requestContent);
 		route = getRoute(requestContent);
+		query = getQueryFromRoute(route);
 		body = getBody(requestContent);
 	}
 
@@ -31,17 +38,20 @@ namespace Server::Http {
 		regex pattern(R"(\s(/(?:(?:[\w\d\.\/\?=&]+)?/?)+)\sHTTP)");
 		smatch match = getRegexMatch(pattern, requestContent);
 		string route = match[1];
-
-		// Parse query
-		if (route.find("=") != string::npos) {
-			regex queryPattern(R"(\??(\w+)=([\w\d]+))");
-			smatch queryMatch = getRegexMatch(queryPattern, route);
-			// Starting at 1 to skip question mark, and incrementing by 2 to get key-value pairs
-			for (int i = 1; i < queryMatch.size(); i += 2) {
-				query[queryMatch[i]] = queryMatch[i + 1];
-			}
-		}
 		return route;
+	}
+
+	map<string, string> HttpRequest::getQueryFromRoute(const string& route) {
+		map<string, string> queryResult;
+		if (route.find("=") == string::npos)
+			return queryResult;
+		regex queryPattern(R"(\??(\w+)=([\w\d]+))");
+		smatch queryMatch = getRegexMatch(queryPattern, route);
+		// Starting at 1 to skip question mark, and incrementing by 2 to get key-value pairs
+		for (int i = 1; i < queryMatch.size(); i += 2) {
+			queryResult[queryMatch[i]] = queryMatch[i + 1];
+		}
+		return queryResult;
 	}
 
 	string HttpRequest::getMethod(const string& requestContent) {
