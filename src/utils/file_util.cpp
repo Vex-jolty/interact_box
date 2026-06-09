@@ -136,9 +136,7 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
-		}
+		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
 	}
 
 	void FileUtil::openFile(wstring file, wstring parameters) {
@@ -148,9 +146,7 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
-		}
+		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
 	}
 
 	void FileUtil::setSoundPack(wstring pack) { _activeSoundPack = pack; }
@@ -412,9 +408,7 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
-		}
+		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
 	}
 
 	void FileUtil::openFile(string file, string parameters) {
@@ -424,9 +418,7 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		if ((int)hInstance < SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(ErrorCodes::CannotOpenFile, file);
-		}
+		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
 	}
 
 	void FileUtil::setSoundPack(string pack) { _activeSoundPack = pack; }

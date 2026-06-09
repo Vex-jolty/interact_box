@@ -14,9 +14,9 @@ namespace Utils {
 		LPCSTR lpParams = parameters.has_value() ? parameters.value().c_str() : NULL;
 		HINSTANCE instance =
 			ShellExecuteA(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
-		if ((int)instance <= SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(ErrorCodes::CannotCallFromShell, toOpen);
-		}
+		InstanceStatusCheckUtil::checkStatus(
+			instance, InteractBoxException(ErrorCodes::CannotCallFromShell, toOpen)
+		);
 		return instance;
 	}
 
@@ -31,11 +31,10 @@ namespace Utils {
 		LPCWSTR lpParams = parameters.has_value() ? parameters.value().c_str() : NULL;
 		HINSTANCE instance =
 			ShellExecuteW(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
-		if ((int)instance <= SHELL_EXECUTE_MIN_SUCCESS_VAL) {
-			throw InteractBoxException(
-				ErrorCodes::CannotCallFromShell, StringHelper::wideStringToString(toOpen)
-			);
-		}
+		InteractBoxException ex = InteractBoxException(
+			ErrorCodes::CannotCallFromShell, StringHelper::wideStringToString(toOpen)
+		);
+		InstanceStatusCheckUtil::checkStatus(instance, ex);
 		return instance;
 	}
 #else

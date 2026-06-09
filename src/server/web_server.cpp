@@ -69,7 +69,7 @@ namespace Server {
 			server->_errorHandler->handleError(c, request->route);
 			response.setResponse(nullopt, HttpStatus::reasonPhrase(c), c);
 		} catch (...) {
-			response.setResponse(nullopt, "", HttpStatus::InternalServerError);
+			response.setResponse(nullopt, HttpStatus::reasonPhrase(HttpStatus::InternalServerError), HttpStatus::InternalServerError);
 		}
 
 		try {
@@ -88,9 +88,9 @@ namespace Server {
 
 		if (!_socket->bindAndListen(
 #if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
-					StringHelper::wideStringToString(_serverHost),
+					StringHelper::wideStringToString(_serverHost).c_str(),
 #else
-					_serverHost,
+					_serverHost.c_str(),
 #endif
 					_port
 				)) {

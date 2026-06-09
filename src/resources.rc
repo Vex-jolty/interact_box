@@ -10,7 +10,12 @@
   IDI_ICON1 ICON "../icon/winxp.ico"
   IDI_LOGO IMAGE "../icon/winxp.bmp"
 #else
-  IDI_ICON1 ICON "../icon/vista.ico"
-  IDI_LOGO IMAGE "../icon/vista.bmp"
+	#if WINVER < _WIN32_WINNT_WIN10
+		IDI_ICON1 ICON "../icon/vista.ico"
+		IDI_LOGO IMAGE "../icon/vista.bmp"
+	#else
+		IDI_ICON1 ICON "../icon/win10.ico"
+		IDI_LOGO IMAGE "../icon/win10.bmp"
+	#endif
   1 24 "app.manifest"
 #endif

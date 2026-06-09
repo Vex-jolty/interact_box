@@ -12,3 +12,4 @@ sounds/*
 pre_compiled/
 malware_with_date_specific_deployment.json
 *.py
+keys/

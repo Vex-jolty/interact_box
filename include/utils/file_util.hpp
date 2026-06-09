@@ -4,6 +4,8 @@
 #ifdef __linux__
 	#include <filesystem>
 	#include <boost/filesystem.hpp>
+#else
+	#include "instance_status_check_util.hpp"
 #endif
 
 #define MAX_FILE_VEC_SIZE 1000000

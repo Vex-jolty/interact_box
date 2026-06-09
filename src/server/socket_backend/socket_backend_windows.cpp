@@ -11,7 +11,7 @@ namespace Server {
 	}
 
 	bool WinSocketBackend::bindAndListen(const std::string& host, int port) {
-		_listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+		_listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		if (_listenSocket == INVALID_SOCKET)
 			return false;
 

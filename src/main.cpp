@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
 	loggingUtil.debug("Malware directory is " + malwareDir);
 	#endif
 
-	#if WINVER >= _WIN32_WINNT_VISTA
+	/*#if WINVER >= _WIN32_WINNT_VISTA
 	if (isAnyAntivirusPresent()) {
 
 		try {
@@ -365,7 +365,7 @@ int main(int argc, char* argv[]) {
 			);
 		}
 	}
-	#endif
+	#endif*/
 	// Starting server
 	Server::WebServer webServer =
 		WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));

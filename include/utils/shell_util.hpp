@@ -4,6 +4,7 @@
 	#include <spawn.h>
 #else
 	#include "general_definitions.hpp"
+	#include "utils/instance_status_check_util.hpp"
 #endif
 
 namespace Utils {
