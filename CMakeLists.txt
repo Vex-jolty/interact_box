@@ -233,8 +233,11 @@ if(SIGN_BINARIES)
 	endif()
 
 	file(COPY ${KEYS_DIR}/interactbox_cert.pem DESTINATION ${CMAKE_BINARY_DIR}/installer)
+	file(COPY ${KEYS_DIR}/interactbox_cert.pfx DESTINATION ${CMAKE_BINARY_DIR}/installer)
 
 	set(CERT_INSTALL_COMMANDS "    File \"interactbox_cert.pem\"")
+
+	set(FINAL_CERT_FILE_PATH ${CMAKE_BINARY_DIR}/installer/interactbox_cert.pfx)
 endif()
 
 configure_file(
@@ -296,10 +299,9 @@ if(WIN32)
 		# TODO: Investigate NSIS use of Powershell, consider switching to MSI for Win10, warn users of the need to add an exception on Defender for Interact Box, investigate why socket binding fails exclusively on Win10 Edition.
 		if(SIGN_BINARIES)
 			file(COPY ${CMAKE_SOURCE_DIR}/installer/psexec.nsh DESTINATION ${CMAKE_BINARY_DIR}/installer)
-			
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
-				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass ${CERT_PASS} -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
+				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass "${CERT_PASS}" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
 				COMMAND rm ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMAND mv ${CMAKE_BINARY_DIR}/interact_box_signed.exe ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMENT "Signing Interact Box"
@@ -315,7 +317,7 @@ if(WIN32)
 		if(SIGN_BINARIES)
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
-				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass ${CERT_PASS} -n "Interact Box" -in ${CMAKE_BINARY_DIR}/installer/setup.exe -out ${CMAKE_BINARY_DIR}/installer/setup_signed.exe
+				COMMAND osslsigncode sign -pkcs12 ${FINAL_CERT_FILE_PATH} -pass "${CERT_PASS}" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/installer/setup.exe -out ${CMAKE_BINARY_DIR}/installer/setup_signed.exe
 				COMMAND rm ${CMAKE_BINARY_DIR}/installer/setup.exe
 				COMMAND mv ${CMAKE_BINARY_DIR}/installer/setup_signed.exe ${CMAKE_BINARY_DIR}/installer/setup.exe
 				COMMENT "Signing Installer"
