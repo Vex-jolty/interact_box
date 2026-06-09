@@ -301,7 +301,7 @@ if(WIN32)
 			file(COPY ${CMAKE_SOURCE_DIR}/installer/psexec.nsh DESTINATION ${CMAKE_BINARY_DIR}/installer)
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
-				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass "${CERT_PASS}" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
+				COMMAND osslsigncode sign -pkcs12 ${FINAL_CERT_FILE_PATH} -pass "${CERT_PASS}" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
 				COMMAND rm ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMAND mv ${CMAKE_BINARY_DIR}/interact_box_signed.exe ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMENT "Signing Interact Box"
