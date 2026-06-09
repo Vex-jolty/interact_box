@@ -226,7 +226,15 @@ foreach(pack ${SOUND_PACKS})
 endforeach()
 
 if(SIGN_BINARIES)
-	set(CERT_INSTALL_COMMANDS "    File \"..\\..\\keys\\interactbox_cert.pem\"")
+	if(EXISTS ${CMAKE_SOURCE_DIR}/keys)
+		set(KEYS_DIR ${CMAKE_SOURCE_DIR}/keys)
+	else()
+		set(KEYS_DIR /work/keys)
+	endif()
+
+	file(COPY ${KEYS_DIR}/interactbox_cert.pem DESTINATION ${CMAKE_BINARY_DIR}/installer)
+
+	set(CERT_INSTALL_COMMANDS "    File \"interactbox_cert.pem\"")
 endif()
 
 configure_file(
@@ -291,7 +299,7 @@ if(WIN32)
 			
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
-				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass "interact" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
+				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass ${CERT_PASS} -n "Interact Box" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
 				COMMAND rm ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMAND mv ${CMAKE_BINARY_DIR}/interact_box_signed.exe ${CMAKE_BINARY_DIR}/interact_box.exe
 				COMMENT "Signing Interact Box"
@@ -307,7 +315,7 @@ if(WIN32)
 		if(SIGN_BINARIES)
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
-				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass "interact" -n "Interact Box" -in ${CMAKE_BINARY_DIR}/installer/setup.exe -out ${CMAKE_BINARY_DIR}/installer/setup_signed.exe
+				COMMAND osslsigncode sign -pkcs12 ${CMAKE_SOURCE_DIR}/keys/interactbox_cert.pfx -pass ${CERT_PASS} -n "Interact Box" -in ${CMAKE_BINARY_DIR}/installer/setup.exe -out ${CMAKE_BINARY_DIR}/installer/setup_signed.exe
 				COMMAND rm ${CMAKE_BINARY_DIR}/installer/setup.exe
 				COMMAND mv ${CMAKE_BINARY_DIR}/installer/setup_signed.exe ${CMAKE_BINARY_DIR}/installer/setup.exe
 				COMMENT "Signing Installer"
