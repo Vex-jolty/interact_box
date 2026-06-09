@@ -246,6 +246,12 @@ elseif(WIN32)
 	set(XP_BOOL_KEYS "\"useTts\": true,")
 endif()
 
+if(WIN32 AND OS_FLAVOR STREQUAL "Win10")
+	set(DEFAULT_PORT "8080")
+else()
+	set(DEFAULT_PORT "80")
+endif()
+
 configure_file(
 	"${CMAKE_SOURCE_DIR}/interact_box_config.json.in"
 	"${CMAKE_BINARY_DIR}/installer/interact_box_config.json"

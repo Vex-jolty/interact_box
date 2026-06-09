@@ -7,7 +7,7 @@ Unicode true
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "nsProcess.nsh"
-!ifndef IS_WIN98_BUILD
+!ifndef IS_98_BUILD
   !include "WinMessages.nsh"
 !endif
 ;!ifdef IS_WIN10_BUILD
@@ -103,7 +103,7 @@ Section "Install"
     File "..\interact_box_extras\src\message_box_process\message_box_process.exe"
     File "..\interact_box_extras\src\trivia_game\trivia_game.exe"
 @CERT_INSTALL_COMMANDS@
-    !ifdef IS_WIN98_BUILD
+    !ifdef IS_98_BUILD
       !ifdef USE_PRE_COMPILED_EXES
         File "..\..\pre_compiled\system_message_process\system_box.exe"
         File "..\..\pre_compiled\system_message_process\VBRUN300.DLL"

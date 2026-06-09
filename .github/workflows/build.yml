@@ -26,6 +26,10 @@ jobs:
             toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
             artifact_path: 'installer/*.exe'
 
+          - target: win10
+            toolchain: /opt/cmake/toolchains/win32_mingw_13_x86_64.cmake
+            artifact_path: 'installer/*.exe'
+
           - target: linux-gtk
             toolchain: ''
             gui: gtk3
