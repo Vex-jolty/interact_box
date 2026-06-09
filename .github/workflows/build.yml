@@ -73,7 +73,8 @@ jobs:
                   -S . \
                   -G Ninja \
                   $BUILD_FLAGS \
-                  -DCMAKE_BUILD_TYPE=Release
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DCERT_PASS=${{ secrets.CERT_PASS }}
 
       - name: Build
         run: |
