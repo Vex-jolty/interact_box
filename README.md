@@ -41,14 +41,15 @@ Currently **supported** targets:
 
 - Windows 98 / 98 SE(*)
 - Windows XP
-- Windows Vista / 7 (WIP)
+- Windows Vista / 7
+- Windows 10
 
 Targets which **have not yet been tested, but should be compatible**:
 
 - Windows ME (via Interact Box 98)
 - Windows 2000 (via Interact Box 98)
 - Windows 8 (via Interact Box Vista)
-- Windows 10 (via Interact Box Vista)
+- Windows 11 (via Interact Box Win10)
 
 My goal is to decrease this list over time. Any feedback on how Interact Box runs on untested versions of Windows is always appreciated!
 

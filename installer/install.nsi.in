@@ -4,16 +4,14 @@
 ; -----------------------------------------
 
 Unicode true
+RequestExecutionLevel Admin
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "nsProcess.nsh"
 !ifndef IS_98_BUILD
   !include "WinMessages.nsh"
 !endif
-;!ifdef IS_WIN10_BUILD
-;  !include psexec.nsh
-;!endif
-
+@INCLUDE_X64@
 Var StartUpCheckbox
 Var UserWantsStartup
 
@@ -60,6 +58,7 @@ InstallDirRegKey HKCU "Software\Interact Box" "Install_Dir"
 Page custom StartupPage StartupPageLeave
 
 !define MUI_FINISHPAGE_RUN "$INSTDIR\interact_box.exe"
+!define MUI_FINISHPAGE_RUN_FUNCTION "CreateScheduledTaskOnFinish"
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.rtf"
 !define MUI_FINISHPAGE_TEXT "Installation complete! Thank you for installing ${PRODUCT_NAME}. \
 You can support me on Ko-Fi at https://ko-fi.com/vexjolteon. \
@@ -113,11 +112,14 @@ Section "Install"
     !endif
     File "..\interact_box_extras\src\interact_box_settings\interact_box_settings.exe"
     File "..\interact_box_extras\src\malware_date_settings\malware_date_settings.exe"
+    !ifdef IS_WIN10_BUILD
+      File "interactbox_cert.pem"
+    !endif
 
     SetOutPath "$INSTDIR\audio"
     File "..\..\interact_box_extras\src\trivia_game\audio\skill_check.wav"
 
-    SetOutPath "$WINDIR"
+    SetOutPath "@CONFIG_OUT_PATH@"
     File ".\interact_box_config.json"
     File ".\malware_with_date_specific_deployment.json"
 
@@ -134,22 +136,22 @@ Section "Install"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     CreateShortcut "$SMPROGRAMS\Interact Box\Uninstall Interact Box.lnk" "$INSTDIR\Uninstall.exe"
 
-    ${If} $UserWantsStartup == ${BST_CHECKED}
-      WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox" "$INSTDIR\interact_box.exe"
-      !if defined(IS_VISTA_BUILD) || defined(IS_WIN10_BUILD)
-        ExecWait '"schtasks" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
-      !endif
-    ${Endif}
-    !ifdef IS_WIN10_BUILD
-      ExecWait `certutil -addstore Root $INSTDIR\interactbox_cert.pem`
-      ExecWait `powershell -ExecutionPolicy Bypass -command 'Add-MpPreference -ExclusionPath "$INSTDIR" -ExclusionProcess "$INSTDIR\interact_box.exe"' -WindowStyle Hidden -FFFeatureOff`
-      ;${PowerShellExec} `'Add-MpPreference -ExclusionPath "$INSTDIR" -ExclusionProcess "$INSTDIR\interact_box.exe"'`
-      ;Pop $R1
-      ;InitPluginsDir
-      ;SetOutput $PLUGINSDIR\Powershell
-      ;File script.ps1
-      ;${PowerShellExecFileLog} "$PLUGINSDIR\Powershell\script.ps1"
+		!ifdef IS_WIN10_BUILD
+      ${DisableX64FSRedirection}
+      WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\interact_box.exe" "~ RUNASADMIN"
+      DetailPrint "Installing root certificate..."
+      ExecWait `certutil -addstore Root "$INSTDIR\interactbox_cert.pem"` $2
+      DetailPrint "Certutil exited with code: $2"
+      DetailPrint "Adding Defender exception..."
+      nsExec::Exec 'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "Add-MpPreference -ExclusionPath \"$INSTDIR\" -ExclusionProcess \"$INSTDIR\interact_box.exe\""' $3
+      DetailPrint "Powershell exited with code: $3"
+			${EnableX64FSRedirection}
     !endif
+
+    ${If} $UserWantsStartup == ${BST_CHECKED}
+			DetailPrint "Adding Interact Box to Startup programs..."
+      WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox" "$INSTDIR\interact_box.exe"
+    ${Endif}    
 SectionEnd
 
 Section "Uninstall"
@@ -161,8 +163,8 @@ Section "Uninstall"
 
     Sleep 500
     
-    Delete "$WINDIR\interact_box_config.json"
-    Delete "$WINDIR\malware_with_date_specific_deployment.json"
+    Delete "@CONFIG_OUT_PATH@\interact_box_config.json"
+    Delete "@CONFIG_OUT_PATH@\malware_with_date_specific_deployment.json"
     Delete "$INSTDIR\message_box\*.*"
     Delete "$INSTDIR\images\*.*"
     Delete "$INSTDIR\sounds\kde_pack\*.*"
@@ -174,6 +176,7 @@ Section "Uninstall"
     Delete "$INSTDIR\malware\*.*"
     Delete "$INSTDIR\midis\*.*"
     Delete "$INSTDIR\trivia\*.*"
+    Delete "$INSTDIR\audio\*.*"
     Delete "$INSTDIR\*.*"
     Delete "$SMPROGRAMS\Interact Box\Launch Interact Box.lnk"
     Delete "$SMPROGRAMS\Interact Box\Uninstall Interact Box.lnk"
@@ -190,10 +193,14 @@ Section "Uninstall"
     RMDir "$INSTDIR\winamp"
     RMDir "$INSTDIR\midis"
     RMDir "$INSTDIR\trivia"
+    RMDir "$INSTDIR\audio"
     RMDir "$INSTDIR"
     ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Run" ""
     DeleteRegKey HKCU "Software\Interact Box"
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "InteractBox"
+    !ifdef IS_WIN10_BUILD
+      ExecWait '"certutil" -delstore "Root" "$INSTDIR\interactbox_cert.pem"'
+    !endif
 SectionEnd
 
 ; --------------------------
@@ -214,6 +221,20 @@ FunctionEnd
 
 Function StartupPageLeave
     ${NSD_GetState} $StartUpCheckbox $UserWantsStartup
+FunctionEnd
+
+Function CreateScheduledTaskOnFinish
+    ${If} $UserWantsStartup == ${BST_CHECKED}
+				!ifdef IS_WIN10_BUILD
+            ExecWait '"$WINDIR\sysnative\schtasks.exe" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /RU INTERACTIVE /f'
+            ExecShell "runas" "$INSTDIR\interact_box.exe" "" SW_SHOWNORMAL
+        !elifdef IS_VISTA_BUILD
+            ExecWait '"schtasks" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
+            ExecShell "runas" "$INSTDIR\interact_box.exe" "" SW_SHOWNORMAL
+        !else
+            Exec '"$INSTDIR\interact_box.exe"'
+        !endif
+    ${Endif}
 FunctionEnd
 
 Function killApp

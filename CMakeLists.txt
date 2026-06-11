@@ -58,6 +58,20 @@ if(WIN32)
 	set(INSTALLER_ICON "..\\..\\icon\\win${flavor_lower}.ico") # Handled Vista special case fix below
 	if(OS_FLAVOR STREQUAL "Vista" OR OS_FLAVOR STREQUAL "Win10")
 		set(INSTALLER_ICON "..\\..\\icon\\${flavor_lower}.ico")
+		set(INCLUDE_X64 "!include \"x64.nsh\"\n")
+		set(RUN_PAGE_DEFINE "!define MUI_FINISHPAGE_RUN_FUNCTION \"CreateScheduledTaskOnFinish\"")
+		if(OS_FLAVOR STREQUAL "Vista")
+			set(TASKS_COMMAND [[
+				ExecWait '"schtasks.exe" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
+			]])
+		else()
+			set(TASKS_COMMAND [[
+				${DisableX64FSRedirection}
+				ExecWait '"$WINDIR\sysnative\schtasks.exe" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
+				${EnableX64FSRedirection}
+			]])
+		endif()
+		
 	endif()
 	set(NSIS_ARG "IS_${flavor_upper}_BUILD")
 	set(HEADER_IMAGE "..\\..\\images\\${PRODUCT_FLAVOR} header image.bmp")
@@ -240,6 +254,12 @@ if(SIGN_BINARIES)
 	set(FINAL_CERT_FILE_PATH ${CMAKE_BINARY_DIR}/installer/interactbox_cert.pfx)
 endif()
 
+if(OS_FLAVOR STREQUAL "98" OR OS_FLAVOR STREQUAL "XP")
+	set(CONFIG_OUT_PATH "\$WINDIR")
+else()
+	set(CONFIG_OUT_PATH "\$APPDATA\\Interact Box")
+endif()
+
 configure_file(
 	"${CMAKE_SOURCE_DIR}/installer/install.nsi.in"
 	"${CMAKE_BINARY_DIR}/installer/install.nsi"
@@ -295,10 +315,7 @@ if(WIN32)
 			COMMENT "Generating installer for ${PRODUCT_FLAVOR}"
 		)
 	else()
-		# IMPORTANT: we're now testing with lax group policies and UAC off. We *will* need to test with regular security settings too, we can't expect users to know how to mess with these things by themselves.
-		# TODO: Investigate NSIS use of Powershell, consider switching to MSI for Win10, warn users of the need to add an exception on Defender for Interact Box, investigate why socket binding fails exclusively on Win10 Edition.
 		if(SIGN_BINARIES)
-			file(COPY ${CMAKE_SOURCE_DIR}/installer/psexec.nsh DESTINATION ${CMAKE_BINARY_DIR}/installer)
 			add_custom_command(TARGET ${PROJECT_NAME}
 				POST_BUILD
 				COMMAND osslsigncode sign -pkcs12 ${FINAL_CERT_FILE_PATH} -pass "${CERT_PASS}" -n \"Interact Box\" -in ${CMAKE_BINARY_DIR}/interact_box.exe -out ${CMAKE_BINARY_DIR}/interact_box_signed.exe
