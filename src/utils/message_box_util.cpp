@@ -41,7 +41,7 @@ namespace Utils {
 			" --type " + getParsedString(type) + " --buttons \"" + getParsedString(buttons) + "\"";
 		int result = system((path + args + " &").c_str());
 		if (result != 0)
-			throw InteractBoxException(ErrorCodes::InvalidJSON);
+			throw InteractBoxException(ErrorCodes::ErrorCode::InvalidJSON);
 	#endif
 	}
 

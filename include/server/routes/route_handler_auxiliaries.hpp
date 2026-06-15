@@ -1,7 +1,11 @@
 #pragma once
 
 #include "server/web_server.hpp"
-#include "utils/registry_util.hpp"
+#ifdef WIN32
+	#include "utils/registry_util.hpp"
+#else
+	#include "utils/sudo_user_util.hpp"
+#endif
 
 namespace Server::Routes {
 	struct FileAndDate {
@@ -55,6 +59,10 @@ namespace Server::Routes {
 	#endif
 	void processWallpaperCommand(std::shared_ptr<Utils::FileUtil> fileUtil);
 #else
+	const std::string getDesktop();
+	void setSoundsFromJson(Json::Value jsonData, std::string packDir, std::vector<std::string> keys);
+	void setDefaultSounds(std::vector<std::string> keys);
+	void processWallpaperCommand(std::shared_ptr<Utils::FileUtil> fileUtil, std::shared_ptr<Utils::SudoUserUtil> sudoUserUtil);
 	void processBoxRequest(
 		std::string processName,
 		Json::Value jsonRequest,

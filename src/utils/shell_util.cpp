@@ -15,7 +15,7 @@ namespace Utils {
 		HINSTANCE instance =
 			ShellExecuteA(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
 		InstanceStatusCheckUtil::checkStatus(
-			instance, InteractBoxException(ErrorCodes::CannotCallFromShell, toOpen)
+			instance, InteractBoxException(ErrorCodes::ErrorCode::CannotCallFromShell, toOpen)
 		);
 		return instance;
 	}
@@ -32,7 +32,7 @@ namespace Utils {
 		HINSTANCE instance =
 			ShellExecuteW(NULL, verb.c_str(), toOpen.c_str(), lpParams, lpDir, nShowCmd);
 		InteractBoxException ex = InteractBoxException(
-			ErrorCodes::CannotCallFromShell, StringHelper::wideStringToString(toOpen)
+			ErrorCodes::ErrorCode::CannotCallFromShell, StringHelper::wideStringToString(toOpen)
 		);
 		InstanceStatusCheckUtil::checkStatus(instance, ex);
 		return instance;

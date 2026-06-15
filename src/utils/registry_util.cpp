@@ -13,7 +13,7 @@ namespace Utils {
 		HKEY hKey;
 		long result = RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_SET_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 
 		result = RegSetValueEx(
 			hKey, newKey.has_value() ? (*newKey).c_str() : NULL, 0, REG_SZ, (BYTE*)newValue.c_str(),
@@ -21,11 +21,11 @@ namespace Utils {
 		);
 		if (result != ERROR_SUCCESS)
 			throw InteractBoxException(
-				ErrorCodes::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
+				ErrorCodes::ErrorCode::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
 			);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return true;
 	}
 
@@ -38,7 +38,7 @@ namespace Utils {
 		HKEY hKey;
 		long result = RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_SET_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 
 		result = RegSetValueEx(
 			hKey, newKey.has_value() ? (*newKey).c_str() : NULL, 0, REG_DWORD, (const BYTE*)&newValue,
@@ -46,11 +46,11 @@ namespace Utils {
 		);
 		if (result != ERROR_SUCCESS)
 			throw InteractBoxException(
-				ErrorCodes::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
+				ErrorCodes::ErrorCode::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
 			);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return true;
 	}
 
@@ -61,13 +61,13 @@ namespace Utils {
 		long result =
 			RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_QUERY_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 		result = RegQueryValueEx(hKey, key.c_str(), 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotGetRegistryKey, key);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotGetRegistryKey, key);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return (wchar_t*)szBuffer;
 	}
 
@@ -82,13 +82,13 @@ namespace Utils {
 		long result =
 			RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_QUERY_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 		result = RegQueryValueEx(hKey, key.c_str(), 0, NULL, (LPBYTE)&value, &dwBufferSize);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotGetRegistryKey, key);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotGetRegistryKey, key);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return value;
 	}
 
@@ -101,7 +101,7 @@ namespace Utils {
 		HKEY hKey;
 		long result = RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_READ, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 
 		vector<wstring> keys;
 		wchar_t subKeyName[256];
@@ -120,7 +120,7 @@ namespace Utils {
 		}
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return keys;
 	}
 
@@ -134,7 +134,7 @@ namespace Utils {
 		HKEY hKey;
 		long result = RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_SET_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 
 		result = RegSetValueEx(
 			hKey, newKey.has_value() ? (*newKey).c_str() : NULL, 0, REG_SZ, (BYTE*)newValue.c_str(),
@@ -142,11 +142,11 @@ namespace Utils {
 		);
 		if (result != ERROR_SUCCESS)
 			throw InteractBoxException(
-				ErrorCodes::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
+				ErrorCodes::ErrorCode::CannotSetRegistryKey, newKey.value_or(regKeyNameToOpen)
 			);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return true;
 	}
 
@@ -157,13 +157,13 @@ namespace Utils {
 		long result =
 			RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_QUERY_VALUE, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 		result = RegQueryValueEx(hKey, key.c_str(), 0, NULL, (LPBYTE)szBuffer, &dwBufferSize);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotGetRegistryKey, key);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotGetRegistryKey, key);
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return (char*)szBuffer;
 	}
 
@@ -176,7 +176,7 @@ namespace Utils {
 		HKEY hKey;
 		long result = RegOpenKeyEx(topRegKeyToOpen, regKeyNameToOpen.c_str(), 0, KEY_READ, &hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotOpenRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotOpenRegistryKey, regKeyNameToOpen);
 
 		vector<string> keys;
 		char subKeyName[256];
@@ -195,7 +195,7 @@ namespace Utils {
 		}
 		result = RegCloseKey(hKey);
 		if (result != ERROR_SUCCESS)
-			throw InteractBoxException(ErrorCodes::CannotCloseRegistryKey, regKeyNameToOpen);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotCloseRegistryKey, regKeyNameToOpen);
 		return keys;
 	}
 	#endif

@@ -19,7 +19,7 @@ namespace Server::Routes {
 	) {
 	#endif
 		if (fileUtil->themeFiles.size() == 0)
-			throw InteractBoxException(ErrorCodes::ThemeFilesNotFound);
+			throw InteractBoxException(ErrorCodes::ErrorCode::ThemeFilesNotFound);
 	#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		wstring file = fileUtil->selectRandomFile(L"theme");
 	#else
@@ -47,7 +47,7 @@ namespace Server::Routes {
 	#endif
 		auto packDirs = fileUtil->getSoundPacks();
 		if (packDirs.size() == 0)
-			throw InteractBoxException(ErrorCodes::SoundPacksNotFound);
+			throw InteractBoxException(ErrorCodes::ErrorCode::SoundPacksNotFound);
 		auto packDir = IndexHelper::getRandomItem(packDirs);
 		auto files = FileHelper::filterFiles(fileUtil->files, packDir);
 	#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
@@ -84,7 +84,7 @@ namespace Server::Routes {
 		}
 	#endif
 		if (jsonFile.empty())
-			throw InteractBoxException(ErrorCodes::CannotFindResource);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotFindResource);
 	#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		string jsonString = FileHelper::readFileAsString(StringHelper::wideStringToString(jsonFile));
 	#else
@@ -120,7 +120,7 @@ namespace Server::Routes {
 	) {
 #endif
 		if (fileUtil->malwareFiles.size() == 0)
-			throw InteractBoxException(ErrorCodes::MalwareFilesNotFound);
+			throw InteractBoxException(ErrorCodes::ErrorCode::MalwareFilesNotFound);
 		auto malwareFile = fileUtil->getRandomMalware();
 #if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		loggingUtil->debug("Malware file is " + StringHelper::wideStringToString(malwareFile));
@@ -223,7 +223,7 @@ namespace Server::Routes {
 			"GET",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 				auto pack = processSoundCommand(_fileUtil);
 	#if WINVER > _WIN32_WINNT_NT4
@@ -287,10 +287,10 @@ namespace Server::Routes {
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef WIN32
 				processWallpaperCommand(_fileUtil);
-				res->setResponse(nullopt, "Set wallpaper", HttpStatus::OK);
 #else
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				processWallpaperCommand(_fileUtil, _sudoUserUtil);
 #endif
+				res->setResponse(nullopt, "Set wallpaper", HttpStatus::OK);
 			},
 			_configUtil.getUseWallpapers()
 		),
@@ -403,7 +403,7 @@ namespace Server::Routes {
 			"GET",
 			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 				Utils::ResolutionUtil::changeResolution(true);
 				res->setResponse(nullopt, "Changed resolution", HttpStatus::OK);
@@ -416,7 +416,7 @@ namespace Server::Routes {
 			"GET",
 			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 				Utils::ResolutionUtil::changeResolution(false);
 				res->setResponse(nullopt, "Changed resolution", HttpStatus::OK);
@@ -429,7 +429,7 @@ namespace Server::Routes {
 			"POST",
 			[](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 				int colors = JsonHelper::getJsonIntValue(req->body, "colors");
 				Utils::ResolutionUtil::changeColors(colors);
@@ -443,7 +443,7 @@ namespace Server::Routes {
 			"GET",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 				auto theme = processThemeCommand(_fileUtil, _loggingUtil, _themeMutex);
 	#if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
@@ -463,7 +463,7 @@ namespace Server::Routes {
 			"GET",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #ifdef __linux__
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 	#if WINVER > _WIN32_WINNT_NT4
 				wstring winampExecutable = L"C:\\PROGRAM FILES\\WINAMP\\WINAMP.EXE";
@@ -488,7 +488,7 @@ namespace Server::Routes {
 			"POST",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if defined(__linux__) || WINVER > _WIN32_WINNT_NT4
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 #else
 			bool isShutdownScreen = JsonHelper::getJsonBoolValue(req->body, "isShutdownScreen");
 			_loggingUtil->debug("Directory is: " + isShutdownScreen ? _configUtil.getShutdownImagesDir() : _configUtil.getBootImagesDir());
@@ -508,7 +508,7 @@ namespace Server::Routes {
 			"POST",
 			[this](Http::HttpRequest* req, Http::HttpResponse* res) {
 #if defined(__linux__) || WINVER > _WIN32_WINNT_NT4
-				throw InteractBoxException(ErrorCodes::UnsupportedFeature);
+				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
 			},
 			nullopt
 #else

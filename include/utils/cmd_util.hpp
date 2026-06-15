@@ -14,11 +14,11 @@ namespace Utils {
 			);
 
 		private:
-			static void _checkIfCommandIsValid(std::string command, std::string malwareDir);
-			static bool _checkIfHasUrl(std::string command, std::vector<std::string>& out);
+			static void _checkIfCommandIsValid(const std::string& command, const std::string& malwareDir);
+			static bool _checkIfHasUrl(const std::string& command, std::vector<std::string>& out);
 			static bool _checkIfHasBannedPath(
-				std::string command,
-				std::string path,
+				const std::string& command,
+				const std::string& path,
 				ErrorCodes::ErrorCode code
 			);
 	};

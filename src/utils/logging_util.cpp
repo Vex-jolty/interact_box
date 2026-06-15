@@ -13,12 +13,15 @@ namespace Utils {
 		bool fileExists = FileHelper::checkIfFileExists(fileName);
 #ifdef WIN32
 		_fileHandle = FileHelper::makeFile(fileName, !fileExists);
+		_newLine = "\r\n";
+#else
+		_newLine = "\n";
 #endif
 		_fileName = fileName;
 		_loggingLevel = loggingLevel;
 		string initialMessage = "Current logging level is " + getLevelString(_loggingLevel) +
 			". Launch with --loggingLevel <desired level> to alter this.";
-		initialMessage += "\r\nPossible logging levels: debug, info, err, warn\r\n";
+		initialMessage += _newLine + "Possible logging levels: debug, info, err, warn" + _newLine;
 		FileHelper::writeToFile(_fileName, initialMessage);
 	}
 
@@ -38,10 +41,10 @@ namespace Utils {
 		string levelString = getLevelString(level);
 		string dateTimeString = "[" + TimeUtil::getAndFormatCurrentTime("%Y-%m-%d %H:%M") + "]";
 #ifdef WIN32
-		boost::replace_all(content, "\n", "\r\n");
+		boost::replace_all(content, "\n", _newLine);
 #endif
-		if (!content.ends_with("\r\n"))
-			content += "\r\n";
+		if (!content.ends_with(_newLine))
+			content += _newLine;
 #ifdef WIN32
 		FileHelper::writeToFile(_fileHandle, levelString + " " + dateTimeString + " " + content);
 #else

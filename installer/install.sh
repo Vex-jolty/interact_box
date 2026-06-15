@@ -19,6 +19,9 @@ install_item() {
 
 mkdir -p /etc/interact-box
 
+mkdir -p /etc/interact-box/malware
+mkdir -p /etc/interact-box/wallpapers
+
 install_item "Interact Box" "interact_box" "$PREFIX/bin/interact-box"
 install_item "Interact Box Settings" "$EXTRAS_PATH/interact_box_settings/interact_box_settings" "$PREFIX/bin/interact-box-settings"
 install_item "Malware Date Settings" "$EXTRAS_PATH/malware_date_settings/malware_date_settings" "$PREFIX/bin/interact-box-malware-date-settings"
@@ -39,5 +42,7 @@ install -Dm644 icon/malware_date_settings.svg \
 
 install -Dm644 ./installer/interact_box_config.json /etc/interact-box/interact_box_config.json
 install -Dm644 ./installer/malware_with_date_specific_deployment.json /etc/interact-box/malware_with_date_specific_deployment.json
+
+install -Dm644 ./interact_box_extras/src/trivia_game/audio/skill_check.wav /etc/interact-box/skill_check.wav
 
 echo "Done."

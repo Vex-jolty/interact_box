@@ -19,7 +19,7 @@ namespace Server::Http {
 	string HttpRoute::getMethod() { return _method; }
 	void HttpRoute::executeHandler(HttpRequest* request, HttpResponse* response) {
 		if (!_condition.value_or(true))
-			throw InteractBoxException(ErrorCodes::RouteIsDisabled, request->route);
+			throw InteractBoxException(ErrorCodes::ErrorCode::RouteIsDisabled, request->route);
 		return _handler(request, response);
 	}
 } // namespace Server::Http

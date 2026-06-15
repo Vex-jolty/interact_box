@@ -9,6 +9,7 @@ IndentAccessModifiers: true
 AccessModifierOffset: -1
 
 BinPackParameters: false
+BinPackLongBracedList: false
 
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllArgumentsOnNextLine: false
@@ -22,3 +23,7 @@ SortIncludes: false
 IndentPPDirectives: BeforeHash
 AlignOperands: DontAlign
 PointerAlignment: Left
+
+Cpp11BracedListStyle: true
+PackConstructorInitializers: Never
+InitializerList::Pack: Never

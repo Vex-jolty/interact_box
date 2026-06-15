@@ -7,6 +7,9 @@
 #include "utils/resolution_util.hpp"
 #include "utils/crash_util.hpp"
 #include "utils/reboot_util.hpp"
+#ifdef __linux__
+	#include "utils/sudo_user_util.hpp"
+#endif
 #include "server/routes/route_handler_auxiliaries.hpp"
 
 namespace Server::Routes {
@@ -41,7 +44,8 @@ namespace Server::Routes {
 #if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 				std::wstring msgBoxProcessName,
 #elif defined(__linux__)
-				std::string msgBoxProcessName
+				std::string msgBoxProcessName,
+				std::shared_ptr<Utils::SudoUserUtil> sudoUserUtil
 #else
 				std::string msgBoxProcessName,
 #endif
@@ -56,7 +60,7 @@ namespace Server::Routes {
 #else
 			)
 					: _configUtil(configUtil), _fileUtil(fileUtil), _loggingUtil(loggingUtil),
-						_msgBoxProcessName(msgBoxProcessName) {
+						_msgBoxProcessName(msgBoxProcessName), _sudoUserUtil(sudoUserUtil) {
 				_setupRoutes();
 			}
 #endif
@@ -66,6 +70,9 @@ namespace Server::Routes {
 			Utils::ConfigUtil& _configUtil;
 			std::shared_ptr<Utils::FileUtil> _fileUtil;
 			std::shared_ptr<Utils::LoggingUtil> _loggingUtil;
+#ifdef __linux__
+			std::shared_ptr<Utils::SudoUserUtil> _sudoUserUtil;
+#endif
 #if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 			std::wstring _msgBoxProcessName;
 #else

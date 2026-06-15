@@ -411,10 +411,43 @@ int main(int argc, char* argv[]) {
 }
 
 #else
+bool isCompatibleDesktop(const string& currentDesktop) {
+	const string lowerDesktop = boost::to_lower_copy(currentDesktop);
+	#ifdef INTERACT_BOX_GUI_QT
+	const vector<string> compatibleDesktops = {"kde", "lxqt"};
+	#elifdef INTERACT_BOX_GUI_GTK3
+	const vector<string> compatibleDesktops = {
+		"gnome", "cinnamon", "xfce", "mate", "budgie", "pantheon", "deepin",
+	};
+	#else
+	return false;
+	#endif
+
+	return ranges::any_of(compatibleDesktops, [&](const string& desktop) {
+		return boost::icontains(desktop, lowerDesktop);
+	});
+}
+
 int main(int argc, char* argv[]) {
+	string currentDesktop = getenv("XDG_CURRENT_DESKTOP");
+	boost::trim(currentDesktop);
+	if (!isCompatibleDesktop(currentDesktop.c_str())) {
+	#ifdef INTERACT_BOX_GUI_QT
+		const string edition = "Qt";
+	#elifdef INTERACT_BOX_GUI_GTK3
+		const string edition = "GTK3";
+	#endif
+		const string warningMessage = "You are using the " + edition +
+			" edition of Interact Box Linux. This edition was not made with the " + currentDesktop +
+			" desktop environment in mind. You might encounter issues executing certain commands.";
+		Utils::MessageBoxUtil::createBox("Interact Box Warning", warningMessage, "w", "ok");
+	}
 	try {
 		cout << "Starting..." << "\n";
-		Utils::ConfigUtil configUtil("/etc/interact-box/interact_box_config.json");
+		Utils::SudoUserUtil sudoUserUtil;
+		shared_ptr<Utils::SudoUserUtil> sharedSudoUserUtil = make_shared<Utils::SudoUserUtil>(sudoUserUtil);
+		const string configDir = "/etc/interact-box";
+		Utils::ConfigUtil configUtil(configDir + "/interact_box_config.json");
 		cout << "Got configs" << "\n";
 		string host = configUtil.getHost();
 		int port = configUtil.getPort();
@@ -424,14 +457,15 @@ int main(int argc, char* argv[]) {
 		vector<string> musicExtensions = configUtil.getMusicExtensions();
 
 		cout << "Starting file util" << "\n";
-		Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
-		string logFileName = "/etc/interact-box/" +
-			Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
+		Utils::FileUtil fileUtil(currentDesktop.c_str(), configDir, wallDir, malwareDir, openableExtensions, musicExtensions, sharedSudoUserUtil);
+		string logFileName =
+			configDir + Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
 		string msgBoxProcessName = fileUtil.workingDirectory + "/interact-box-message-box";
 		Utils::LoggingUtil loggingUtil(logFileName, configUtil.getLoggingLevel());
 		cout << "Started file util and logging util" << "\n";
 		shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);
 		shared_ptr<Utils::FileUtil> sharedFileUtil = make_shared<Utils::FileUtil>(fileUtil);
+		
 		Errors::ErrorHandler errorHandler(sharedLoggingUtil, msgBoxProcessName);
 		unique_ptr<Errors::ErrorHandler> errorHandlerPtr =
 			make_unique<Errors::ErrorHandler>(errorHandler);
@@ -439,15 +473,13 @@ int main(int argc, char* argv[]) {
 		Server::WebServer webServer =
 			WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
 		Server::Routes::RouteHandler routeHandler(
-			configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName
+			configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName, sharedSudoUserUtil
 		);
 		auto routes = routeHandler.getRoutes();
-		for (auto& route: routes) {
-			cout << route.getPath() << "\n";
-		}
 		webServer.addRoutes(routes);
 		webServer.start();
 	} catch (exception& e) {
+		Utils::MessageBoxUtil::createBox("Interact Box Error", e.what(), "e", "ok");
 		cerr << e.what() << "\n";
 		return 1;
 	}

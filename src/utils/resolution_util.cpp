@@ -26,14 +26,14 @@ namespace Utils {
 			}
 		}
 		if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devMode) == 0) {
-			throw InteractBoxException(ErrorCodes::CannotEnumerateDisplaySettings);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotEnumerateDisplaySettings);
 		}
 		devMode.dmPelsWidth = finalWidth;
 		devMode.dmPelsHeight = finalHeight;
 		devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
 		LONG result = ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
 		if (result != DISP_CHANGE_SUCCESSFUL) {
-			throw InteractBoxException(ErrorCodes::CannotChangeDisplay);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotChangeDisplay);
 		}
 #endif
 	}
@@ -50,14 +50,14 @@ namespace Utils {
 			32, // 32 bits
 		};
 		if (find(validValues.begin(), validValues.end(), bitsPerPixel) == validValues.end()) {
-			throw InteractBoxException(ErrorCodes::InvalidColorSetting, to_string(bitsPerPixel));
+			throw InteractBoxException(ErrorCodes::ErrorCode::InvalidColorSetting, to_string(bitsPerPixel));
 		}
 		devMode.dmSize = sizeof(DEVMODE);
 		devMode.dmBitsPerPel = bitsPerPixel;
 		devMode.dmFields = DM_BITSPERPEL;
 		LONG result = ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
 		if (result != DISP_CHANGE_SUCCESSFUL) {
-			throw InteractBoxException(ErrorCodes::CannotChangeDisplay);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotChangeDisplay);
 		}
 #endif
 	}

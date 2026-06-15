@@ -51,7 +51,7 @@ namespace Server {
 	void WinSocketBackend::sendData(int clientFd, const std::string& data) {
 		int result = send((SOCKET)clientFd, data.c_str(), (int)data.size(), 0);
     if (result != SOCKET_ERROR) return;
-    throw InteractBoxException(ErrorCodes::CannotSendResponse);
+    throw InteractBoxException(ErrorCodes::ErrorCode::CannotSendResponse);
 	}
 
 	void WinSocketBackend::closeClient(int clientFd) { closesocket((SOCKET)clientFd); }

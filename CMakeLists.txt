@@ -14,6 +14,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 		message(FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} is not a currently supported compiler")
 	endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	set(TARGET_LINUX_GUI "qt" CACHE STRING "The GUI to use on Linux")
+	set_property(CACHE TARGET_LINUX_GUI PROPERTY STRINGS gtk3 qt)
 else()
 	message(FATAL_ERROR "${CMAKE_SYSTEM_NAME} is not a currently supported operating system")
 endif()
@@ -123,6 +125,10 @@ if (WIN32)
 		src/threads/tray_thread.cpp
 		src/resources.rc
 	)
+else()
+	list(APPEND UTIL_FILES
+		src/utils/sudo_user_util.cpp
+	)
 endif()
 
 if(REQUIRED_ARCH EQUAL 32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -200,6 +206,14 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 	-fpermissive
 )
 
+if(NOT WIN32)
+	string(TOUPPER "${TARGET_LINUX_GUI}" linux_gui_upper)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE
+		LINUX_GUI_FRAMEWORK="${TARGET_LINUX_GUI}"
+		INTERACT_BOX_GUI_${linux_gui_upper}
+	)
+endif()
+
 target_link_options(${PROJECT_NAME} PRIVATE
 	$<$<CONFIG:Debug>:-g>
 )
@@ -273,15 +287,54 @@ set(XP_BOOL_KEYS "")
 if(WIN32 AND OS_FLAVOR STREQUAL "98")
 	set(BOOT_KEYS "\"bootImagesDir\": \"boot_images\",\n	\"shutdownImagesDir\": \"shutdown_images\",")
 	set(BOOT_BOOL_KEYS "\"useBootAndShutdownImages\": true,\n	\"useSystemBox\": true,")
+	set(DEFAULT_MUSIC_EXTENSIONS "[\".midi\", \".mid\"]")
 elseif(WIN32)
-	set(XP_BOOL_KEYS "\"useTts\": true,")
+	set(XP_BOOL_KEYS "\"useTts\": true,")	
 endif()
 
+if(WIN32)
+	set(EXT_LIST
+    "\".exe\""
+    "\".txt\""
+    "\".html\""
+    "\".jpg\""
+    "\".png\""
+    "\".gif\""
+    "\".wav\""
+    "\".mp3\""
+    "\".mp4\""
+    "\".scr\""
+    "\".com\""
+    "\".htm\""
+	)
+else()
+	set(EXT_LIST
+		"\".sh\""
+		"\".py\""
+		"\".desktop\""
+    "\".txt\""
+    "\".html\""
+    "\".jpg\""
+    "\".png\""
+    "\".gif\""
+    "\".wav\""
+    "\".mp3\""
+    "\".mp4\""
+	)
+endif()
+	
 if(WIN32 AND OS_FLAVOR STREQUAL "Win10")
 	set(DEFAULT_PORT "8080")
 else()
 	set(DEFAULT_PORT "80")
 endif()
+
+if(WIN32 AND OS_FLAVOR STREQUAL "98")
+else()
+	set(DEFAULT_MUSIC_EXTENSIONS "[\".midi\", \".mid\", \".mp3\", \".wav\"]")
+endif()
+
+string(REPLACE ";" ",\n  " OPENABLE_EXTENSIONS_LIST "${EXT_LIST}")
 
 configure_file(
 	"${CMAKE_SOURCE_DIR}/interact_box_config.json.in"
@@ -293,7 +346,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 	POST_BUILD
 	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/README.md -o ${CMAKE_BINARY_DIR}/installer/README.rtf
 	COMMAND pandoc -V lang=en-US -f markdown -s ${CMAKE_SOURCE_DIR}/LICENSE.md -o ${CMAKE_BINARY_DIR}/installer/LICENSE.rtf
-	COMMENT "Generating license and readme"	
+	COMMENT "Generating license and readme"
 )
 
 if (LINUX)
@@ -342,6 +395,9 @@ if(WIN32)
 		endif()
 	endif()
 else()
+	if(EXISTS ${CMAKE_SOURCE_DIR}/interact_box_extras/src/trivia_game/audio/skill_check.wav)
+		file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/trivia_game/audio/skill_check.wav DESTINATION ${CMAKE_BINARY_DIR}/interact_box_extras/src/trivia_game/audio)
+	endif()
 	add_custom_command(TARGET ${PROJECT_NAME}
 		POST_BUILD
 		COMMAND tar

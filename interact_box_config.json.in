@@ -4,20 +4,9 @@
   "wallpaperDir": "wallpapers",
   "malwareDir": "malware",
   @BOOT_KEYS@
-  "musicExtensions": [".midi", ".mid"],
+  "musicExtensions": @DEFAULT_MUSIC_EXTENSIONS@,
   "openableExtensions": [
-    ".exe",
-    ".txt",
-    ".html",
-    ".jpg",
-    ".png",
-    ".gif",
-    ".wav",
-    ".mp3",
-    ".mp4",
-    ".scr",
-    ".com",
-    ".htm"
+    @OPENABLE_EXTENSIONS_LIST@
   ],
   "useWallpapers": true,
   @BOOT_BOOL_KEYS@

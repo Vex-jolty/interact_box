@@ -4,6 +4,17 @@ This is the official Interact Box repository.
 
 Interact Box is a program designed to let people do things to Windows via HTTP requests. It was primarily designed to be used by streamers who wish to use a secondary program to let their chat send commands to a VM.
 
+## Editions
+
+The current editions are:
+
+- Interact Box 98
+- Interact Box XP
+- Interact Box Vista
+- Interact Box Win10
+- Interact Box Linux - Qt
+- Interact Box Linux - GTK3
+
 ## What Interact Box does
 
 Interact Box is able to:
@@ -83,9 +94,19 @@ Your properties should look like the image below:
 
 ![Screenshot of setup.exe properties, showing the KernelEx tab with "Use specific compatibility mode" enabled, the option "Windows 98 SE" picked, and the checkbox "Don't use these settings in child processes" checked](images/properties.jpg)
 
-## Supported Linux versions
+## Notes on the Linux editions
+
+### Supported distros
 
 So far, *only Arch Linux & derivatives* are officially supported.
+
+PKGBUILDs are planned, but will not be shared in the AUR due to the software's dangerous nature.
+
+While there are plans to support Fedora and Debian (plus derivatives), that is not the case yet. Support for those distros will likely come *after* the main issues with these editions are addressed.
+
+### Known issues
+
+The /wallpaper route doesn't seem to work properly, despite the use of `sudo -u` to switch back to user-level permissions.
 
 ## Routes
 
@@ -200,6 +221,7 @@ So far, *only Arch Linux & derivatives* are officially supported.
 - /winamp
   - Method: GET
   - Sets a random WinAmp skin
+  - Unavailable in the Linux editions
 
 - /theme
   - Method: GET
@@ -211,7 +233,7 @@ So far, *only Arch Linux & derivatives* are officially supported.
   - Sets a random image as the splash screen, from those saved in a specific folder
 
 - /tts
-  - Interact Box XP and Vista *only*
+  - *Unavailable in Interact Box 98*
   - Method: POST
   - Body schema:
 

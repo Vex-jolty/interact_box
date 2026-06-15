@@ -4,6 +4,7 @@
 #ifdef __linux__
 	#include <filesystem>
 	#include <boost/filesystem.hpp>
+	#include "utils/sudo_user_util.hpp"
 #else
 	#include "instance_status_check_util.hpp"
 #endif
@@ -34,10 +35,13 @@ namespace Utils {
 		public:
 #ifdef __linux__
 			FileUtil(
+				const std::string& configDir,
+				const std::string& desktopEnvironment,
 				std::string wallDir,
 				std::string malwareDir,
 				std::vector<std::string> openableExtensions,
-				std::vector<std::string> musicExtensions
+				std::vector<std::string> musicExtensions,
+				std::shared_ptr<SudoUserUtil> sudoUserUtil
 			);
 
 			std::vector<std::string> files;
@@ -157,14 +161,20 @@ namespace Utils {
 
 #else
 			std::vector<std::string> _checkDirAndFilterFiles(std::string dir, std::regex pattern);
+#ifdef __linux__
+			std::string _getFullPath(std::string dir);
+#else
 			std::string _getFullPath(std::string dir, std::regex pattern);
+#endif
 			std::tuple<std::string, int> _getRandomFile(
 				std::vector<std::string> files,
 				bool isDefaultFiles = false
 			);
 	#ifdef __linux__
-			std::string _getDesktopEnvironment();
 			bool _runWallpaperCommand(const std::string& command);
+			std::string _configDir;
+			std::string _desktopEnvironment;
+			std::shared_ptr<SudoUserUtil> _sudoUserUtil;
 	#endif
 #endif
 	};

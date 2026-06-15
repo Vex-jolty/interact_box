@@ -3,7 +3,11 @@
 namespace Utils {
 	using namespace std;
 
-	void CmdUtil::executeTerminalCommand(string command, string malwareDir, bool warnAboutUrlsInTerminal) {
+	void CmdUtil::executeTerminalCommand(
+		string command,
+		string malwareDir,
+		bool warnAboutUrlsInTerminal
+	) {
 		/** cSpell:disable */
 #ifdef WIN32
 		if (!boost::iends_with(command, ";pause"))
@@ -113,22 +117,21 @@ namespace Utils {
 		string tempFile = "chat-" + currentTime + ".sh";
 		string fullTempFilePath = tempDir + "/" + tempFile;
 
-		malwareDir = StringHelper::toLowercase(malwareDir);
 		_checkIfCommandIsValid(command, malwareDir);
 		system(fullTempFilePath.c_str());
 #endif
 	}
 
-	void CmdUtil::_checkIfCommandIsValid(string command, string malwareDir) {
+	void CmdUtil::_checkIfCommandIsValid(const string& command, const string& malwareDir) {
 		map<string, ErrorCodes::ErrorCode> invalidCommandsAndErrors = {
 #ifdef WIN32
-			{"deltree", ErrorCodes::DelTreeCommand},
-			{"del", ErrorCodes::DelCommand},
-			{"erase", ErrorCodes::EraseCommand},
+			{"deltree", ErrorCodes::ErrorCode::DelTreeCommand},
+			{"del", ErrorCodes::ErrorCode::DelCommand},
+			{"erase", ErrorCodes::ErrorCode::EraseCommand},
+			{"trivia_game", ErrorCodes::ErrorCode::TriviaGameCommand}
 #else
-			{"rm", ErrorCodes::DelCommand},
+			{"interact-box-trivia-game", ErrorCodes::ErrorCode::TriviaGameCommand}
 #endif
-			{"trivia_game", ErrorCodes::TriviaGameCommand}
 		};
 		for (auto& [key, val] : invalidCommandsAndErrors) {
 			if (boost::istarts_with(command, key) || boost::istarts_with(command, "@echo off;" + key)) {
@@ -136,19 +139,29 @@ namespace Utils {
 			}
 		}
 
-		_checkIfHasBannedPath(command, malwareDir, ErrorCodes::MalwareCommand);
+#ifdef __linux__
+		regex rmRootPattern(R"(rm -(-*(?:r(?:ecursive)?|f(?:orce)?) *)+/(?![a-zA-Z]))");
+		smatch match;
+		if (regex_search(command, match, rmRootPattern)) {
+			throw InteractBoxException(ErrorCodes::ErrorCode::RmCommand);
+		}
+#endif
+
+		_checkIfHasBannedPath(command, malwareDir, ErrorCodes::ErrorCode::MalwareCommand);
 #if defined(WIN32) && WINVER > _WIN32_WINNT_NT4
 		_checkIfHasBannedPath(
-			command, FileHelper::getWorkingDirectoryAsString(), ErrorCodes::IllegalDirectoryManipulation
+			command, FileHelper::getWorkingDirectoryAsString(),
+			ErrorCodes::ErrorCode::IllegalDirectoryManipulation
 		);
 #else
 		_checkIfHasBannedPath(
-			command, FileHelper::getWorkingDirectory(), ErrorCodes::IllegalDirectoryManipulation
+			command, FileHelper::getWorkingDirectory(),
+			ErrorCodes::ErrorCode::IllegalDirectoryManipulation
 		);
 #endif
 	}
 
-	bool CmdUtil::_checkIfHasUrl(string command, vector<string>& out) {
+	bool CmdUtil::_checkIfHasUrl(const string& command, vector<string>& out) {
 		regex urlPattern(
 			R"((?:http|https|ftp)://(?:[\w-]+(?:\.[\w-]+)+)(?:[\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)"
 		);
@@ -164,7 +177,7 @@ namespace Utils {
 		return true;
 	}
 
-	bool CmdUtil::_checkIfHasBannedPath(string command, string path, ErrorCodes::ErrorCode code) {
+	bool CmdUtil::_checkIfHasBannedPath(const string& command, const string& path, ErrorCodes::ErrorCode code) {
 		if (boost::icontains(command, path))
 			throw InteractBoxException(code);
 

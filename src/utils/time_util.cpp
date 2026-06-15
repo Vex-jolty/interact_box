@@ -28,6 +28,6 @@ namespace Utils {
 		WINBOOL success = SetSystemTime(&sysTime);
 #endif
 		if (!success)
-			throw InteractBoxException(ErrorCodes::CannotSetSystemDateTime);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetSystemDateTime);
 	}
 } // namespace Utils

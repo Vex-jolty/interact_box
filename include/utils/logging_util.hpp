@@ -31,6 +31,7 @@ namespace Utils {
 #ifdef WIN32
 			HANDLE _fileHandle;
 #endif
+			std::string _newLine;
 			LoggingLevel _loggingLevel;
 			std::string getLevelString(LoggingLevel level);
 	};

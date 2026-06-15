@@ -14,7 +14,7 @@ namespace Server::Routes {
 			wstring file = packDir + L"\\" + value;
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, file);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + L" as " + value);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value);
 		}
 	}
 
@@ -26,7 +26,7 @@ namespace Server::Routes {
 			wstring subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, value);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + L" as " + value);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value);
 		}
 	}
 
@@ -39,7 +39,7 @@ namespace Server::Routes {
 			string file = packDir + "\\" + value;
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, file);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + " as " + value);
 		}
 	}
 
@@ -51,7 +51,7 @@ namespace Server::Routes {
 			string subKey = "AppEvents\\Schemes\\Apps\\.Default\\" + key + "\\.Current";
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, value);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::CannotSetAudioFile, key + " as " + value);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + " as " + value);
 		}
 	}
 	#endif
@@ -102,12 +102,12 @@ namespace Server::Routes {
 		shared_ptr<Utils::LoggingUtil> loggingUtil = themeArgs->loggingUtil;
 		try {
 			if (lockResult != 0)
-				throw InteractBoxException(ErrorCodes::CannotLockMutex);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotLockMutex);
 			auto file = themeArgs->randomFile;
 			fileUtil->openFile(file);
 			Sleep(1000);
 
-	// Windows 7 seems to not open a display settings window, so we're skipping this logic for it
+			// Windows 7 seems to not open a display settings window, so we're skipping this logic for it
 
 	#if WINVER < _WIN32_WINNT_7
 
@@ -126,13 +126,13 @@ namespace Server::Routes {
 			}
 			WaitForInputIdle(window, INFINITE);
 			if (window == NULL)
-				throw InteractBoxException(ErrorCodes::CannotFindWindow);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotFindWindow);
 			ProcessHelper::setToForeground(window);
 			// Create one HWND per call instead of using global variable
 			HWND okButton = NULL;
 			EnumChildWindows(window, getOkButton, reinterpret_cast<LPARAM>(&okButton));
 			if (okButton == NULL)
-				throw InteractBoxException(ErrorCodes::CannotFindButton);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotFindButton);
 			SendMessage(okButton, BM_CLICK, 0, 0);
 			// Waiting for window to close
 			while (IsWindow(window)) {
@@ -175,7 +175,8 @@ namespace Server::Routes {
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
 		wstring title = JsonHelper::getJsonWideStringValue(jsonRequest, L"title", "Interact Box");
-		wstring content = JsonHelper::getJsonWideStringValue(jsonRequest, L"content", jsonRequest.toStyledString());
+		wstring content =
+			JsonHelper::getJsonWideStringValue(jsonRequest, L"content", jsonRequest.toStyledString());
 		wstring type = JsonHelper::getJsonWideStringValue(jsonRequest, L"type", "i");
 		wstring buttons = JsonHelper::getJsonWideStringValue(jsonRequest, L"buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
@@ -183,7 +184,7 @@ namespace Server::Routes {
 
 	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil) {
 		if (fileUtil->wallpaperFiles.size() == 0)
-			throw InteractBoxException(ErrorCodes::WallpapersNotFound);
+			throw InteractBoxException(ErrorCodes::ErrorCode::WallpapersNotFound);
 		HKEY hKey = HKEY_CURRENT_USER;
 		wstring topKey = L"Control Panel\\Desktop";
 		wstring mainKey = L"Wallpaper";
@@ -200,7 +201,8 @@ namespace Server::Routes {
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
 		string title = JsonHelper::getJsonStringValue(jsonRequest, "title", "Interact Box");
-		string content = JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
+		string content =
+			JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
 		string type = JsonHelper::getJsonStringValue(jsonRequest, "type", "i");
 		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);
@@ -208,7 +210,7 @@ namespace Server::Routes {
 
 	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil) {
 		if (fileUtil->wallpaperFiles.size() == 0)
-			throw InteractBoxException(ErrorCodes::WallpapersNotFound);
+			throw InteractBoxException(ErrorCodes::ErrorCode::WallpapersNotFound);
 		HKEY hKey = HKEY_CURRENT_USER;
 		string topKey = "Control Panel\\Desktop";
 		string mainKey = "Wallpaper";
@@ -220,13 +222,67 @@ namespace Server::Routes {
 	#endif
 
 #else
+	const string getDesktop() {
+		string desktop = getenv("XDG_CURRENT_DESKTOP");
+		boost::to_lower(desktop);
+		boost::trim(desktop);
+		return desktop.c_str();
+	}
+
+	const string getWallpaperCommand(bool isDark = false) {
+	#ifdef INTERACT_BOX_GUI_QT
+		return "qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \"var "
+					 "Desktops = desktops();for (i=0;i<Desktops.length;i++) {d = "
+					 "Desktops[i];d.wallpaperPlugin = \\\"org.kde.image\\\";d.currentConfigGroup "
+					 "=Array(\\\"Wallpaper\\\",\\\"org.kde.image\\\",\\\"General\\\");print(d.readConfig("
+					 "\\\"Image\\\"));}\"";
+	#else
+		const string desktop = getDesktop();
+		if (desktop.starts_with("xfce")) {
+			return "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/workspace0/last-image";
+		} else {
+			const string endingPart = isDark ? "picture-uri-dark" : "picture-uri";
+			return "gsettings get org.gnome.desktop.background " + endingPart;
+		}
+	#endif
+	}
+
+	const string getCurrentWallpaper(shared_ptr<Utils::SudoUserUtil> sudoUserUtil, bool isDark = false) {
+		string command = getWallpaperCommand(isDark);
+		const string& realUser = sudoUserUtil->getRealUser();
+		if (!realUser.empty()) {
+			command = "sudo -u " + realUser + " " + command;
+		}
+		const string outputPath = "/tmp/wallpaper_output.txt";
+		command += " > " + outputPath;
+		
+		ifstream in(outputPath);
+		string result;
+		getline(in, result);
+
+		boost::trim(result);
+
+		if (result.empty() && command.starts_with("gsettings") && !isDark) {
+			return getCurrentWallpaper(sudoUserUtil, isDark);
+		}
+		return result;
+	}
+
+	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil, shared_ptr<Utils::SudoUserUtil> sudoUserUtil) {
+		if (fileUtil->wallpaperFiles.size() == 0)
+			throw InteractBoxException(ErrorCodes::ErrorCode::WallpapersNotFound);
+		const string currentWallpaper = getCurrentWallpaper(sudoUserUtil);
+		const string& wallpaper = fileUtil->setWallpaper(currentWallpaper);
+	}
+
 	void processBoxRequest(
 		string processName,
 		Json::Value jsonRequest,
 		shared_ptr<Utils::FileUtil> fileUtil
 	) {
 		string title = JsonHelper::getJsonStringValue(jsonRequest, "title", "Interact Box");
-		string content = JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
+		string content =
+			JsonHelper::getJsonStringValue(jsonRequest, "content", jsonRequest.toStyledString());
 		string type = JsonHelper::getJsonStringValue(jsonRequest, "type", "i");
 		string buttons = JsonHelper::getJsonStringValue(jsonRequest, "buttons", "ok");
 		Utils::MessageBoxUtil::createBox(title, content, type, buttons);

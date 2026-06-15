@@ -136,7 +136,9 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
+		InstanceStatusCheckUtil::checkStatus(
+			hInstance, InteractBoxException(ErrorCodes::ErrorCode::CannotOpenFile, file)
+		);
 	}
 
 	void FileUtil::openFile(wstring file, wstring parameters) {
@@ -146,7 +148,9 @@ namespace Utils {
 		LPCWSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
+		InstanceStatusCheckUtil::checkStatus(
+			hInstance, InteractBoxException(ErrorCodes::ErrorCode::CannotOpenFile, file)
+		);
 	}
 
 	void FileUtil::setSoundPack(wstring pack) { _activeSoundPack = pack; }
@@ -162,7 +166,7 @@ namespace Utils {
 			SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
 		);
 		if (!result) {
-			throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetWallpaper, wallpaperPath);
 		}
 		return wallpaperPath;
 	}
@@ -200,14 +204,16 @@ namespace Utils {
 		HANDLE hFind = FindFirstFile((soundsDir + L"\\*").c_str(), &findFileData);
 
 		if (hFind == INVALID_HANDLE_VALUE) {
-			throw InteractBoxException(ErrorCodes::CannotAccessDirectory, soundsDir);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotAccessDirectory, soundsDir);
 			return packDirs;
 		}
 
 		do {
 			const wstring fileOrDirectory = findFileData.cFileName;
-			if (fileOrDirectory == L"." || fileOrDirectory == L".." ||
-					fileOrDirectory.ends_with(_activeSoundPack)) {
+			if (
+				fileOrDirectory == L"." || fileOrDirectory == L".." ||
+				fileOrDirectory.ends_with(_activeSoundPack)
+			) {
 				continue;
 			}
 			wstring fullPath = soundsDir + L"\\" + fileOrDirectory;
@@ -224,7 +230,7 @@ namespace Utils {
 		wstring typeName = type.value_or(L"default");
 		vector<wstring> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		int randomNumber = IndexHelper::getRandomIndex(filesToOpen);
 		wstring randomFile = filesToOpen[randomNumber];
 		try {
@@ -245,7 +251,7 @@ namespace Utils {
 		wstring typeName = type.value_or(L"default");
 		vector<wstring> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		tuple<wstring, int> randomFileAndNumber = _getRandomFile(filesToOpen);
 		wstring randomFile = get<0>(randomFileAndNumber);
 		return randomFile;
@@ -258,7 +264,7 @@ namespace Utils {
 		if (!boost::iequals(newFileName, randomFile)) {
 			bool renameSuccess = FileHelper::renameFile(randomFile, newFileName);
 			if (!renameSuccess) {
-				throw InteractBoxException(ErrorCodes::CannotRenameFile, randomFile);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotRenameFile, randomFile);
 			};
 			malwareFiles[randomNumber] = newFileName;
 			return newFileName;
@@ -326,7 +332,7 @@ namespace Utils {
 		HANDLE hFind = FindFirstFile((directory + "\\*").c_str(), &findFileData);
 
 		if (hFind == INVALID_HANDLE_VALUE) {
-			throw InteractBoxException(ErrorCodes::CannotAccessDirectory, directory);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotAccessDirectory, directory);
 			return;
 		}
 
@@ -354,8 +360,10 @@ namespace Utils {
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
 		for (auto& dirAndVec : dirsAndVectors) {
-			if (boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
-					FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
+			if (
+				boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
+				FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)
+			) {
 				dirAndVec.vec->push_back(fullPath);
 				return;
 			}
@@ -408,7 +416,9 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
+		InstanceStatusCheckUtil::checkStatus(
+			hInstance, InteractBoxException(ErrorCodes::ErrorCode::CannotOpenFile, file)
+		);
 	}
 
 	void FileUtil::openFile(string file, string parameters) {
@@ -418,7 +428,9 @@ namespace Utils {
 		LPCSTR lpDirectory = NULL;
 		int nShowCmd = SW_SHOWNORMAL;
 		HINSTANCE hInstance = ShellExecute(NULL, lpVerb, lpFile, lpParameters, lpDirectory, nShowCmd);
-		InstanceStatusCheckUtil::checkStatus(hInstance, InteractBoxException(ErrorCodes::CannotOpenFile, file));
+		InstanceStatusCheckUtil::checkStatus(
+			hInstance, InteractBoxException(ErrorCodes::ErrorCode::CannotOpenFile, file)
+		);
 	}
 
 	void FileUtil::setSoundPack(string pack) { _activeSoundPack = pack; }
@@ -434,7 +446,7 @@ namespace Utils {
 			SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
 		);
 		if (!result) {
-			throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetWallpaper, wallpaperPath);
 		}
 		return wallpaperPath;
 	}
@@ -466,14 +478,16 @@ namespace Utils {
 		HANDLE hFind = FindFirstFile((soundsDir + "\\*").c_str(), &findFileData);
 
 		if (hFind == INVALID_HANDLE_VALUE) {
-			throw InteractBoxException(ErrorCodes::CannotAccessDirectory, soundsDir);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotAccessDirectory, soundsDir);
 			return packDirs;
 		}
 
 		do {
 			const string fileOrDirectory = findFileData.cFileName;
-			if (fileOrDirectory == "." || fileOrDirectory == ".." ||
-					fileOrDirectory.ends_with(_activeSoundPack)) {
+			if (
+				fileOrDirectory == "." || fileOrDirectory == ".." ||
+				fileOrDirectory.ends_with(_activeSoundPack)
+			) {
 				continue;
 			}
 			string fullPath = soundsDir + "\\" + fileOrDirectory;
@@ -489,10 +503,10 @@ namespace Utils {
 	string FileUtil::openRandomFile(optional<string> type, int retries) {
 		string typeName = type.value_or("default");
 		if (!_mapOfOpenableOptions.count(typeName))
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen, typeName == "default");
 		string randomFile = get<0>(randomFileAndNumber);
 		int randomNumber = get<1>(randomFileAndNumber);
@@ -513,10 +527,10 @@ namespace Utils {
 	string FileUtil::selectRandomFile(optional<string> type, int retries) {
 		string typeName = type.value_or("default");
 		if (!_mapOfOpenableOptions.count(typeName))
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen);
 		string randomFile = get<0>(randomFileAndNumber);
 		return randomFile;
@@ -530,7 +544,7 @@ namespace Utils {
 			string newFileName = randomFile.substr(0, pos);
 			bool renameSuccess = FileHelper::renameFile(randomFile, newFileName);
 			if (!renameSuccess) {
-				throw InteractBoxException(ErrorCodes::CannotRenameFile, randomFile);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotRenameFile, randomFile);
 			};
 			malwareFiles[randomNumber] = newFileName;
 			return newFileName;
@@ -541,16 +555,21 @@ namespace Utils {
 #else
 	namespace fs = std::filesystem;
 	FileUtil::FileUtil(
+		const string& configDir,
+		const string& desktopEnvironment,
 		string wallDir,
 		string malwareDir,
 		vector<string> openableExtensions,
-		vector<string> musicExtensions
+		vector<string> musicExtensions,
+		shared_ptr<SudoUserUtil> sudoUserUtil
 	) {
-		workingDirectory = StringHelper::toLowercase(FileHelper::getWorkingDirectory());
+		_configDir = configDir;
+		_desktopEnvironment = desktopEnvironment;
+		workingDirectory = FileHelper::getWorkingDirectory();
+		_sudoUserUtil = sudoUserUtil;
 
-		regex diskPattern(R"([A-Za-z]:\s)");
-		wallDir = _getFullPath(wallDir, diskPattern);
-		malwareDir = _getFullPath(malwareDir, diskPattern);
+		wallDir = _getFullPath(wallDir);
+		malwareDir = _getFullPath(malwareDir);
 
 		DirAndVector wallDirAndVec = {wallDir, &wallpaperFiles};
 		DirAndVector malwareDirAndVec = {malwareDir, &malwareFiles};
@@ -561,11 +580,12 @@ namespace Utils {
 			openableExtensionsAndVec, musicExtensionsAndVec
 		};
 		_listFiles("/home", dirsAndVectors, extensionsAndVectors);
+		_listFiles("/etc", dirsAndVectors, extensionsAndVectors);
 
 		_activeSoundPack = "default";
 
-		vector<string> bmpExtension = {".bmp", ".png", ".jpg"};
-		wallpaperFiles = FileHelper::filterFiles(wallpaperFiles, bmpExtension);
+		vector<string> imageExtensions = {".bmp", ".png", ".jpg"};
+		wallpaperFiles = FileHelper::filterFiles(wallpaperFiles, imageExtensions);
 
 		_mapOfOpenableOptions["default"] = &openableFiles;
 		_mapOfOpenableOptions["malware"] = &malwareFiles;
@@ -578,9 +598,13 @@ namespace Utils {
 		vector<DirAndVector> dirsAndVectors,
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
-
-		for (const auto& entry : fs::directory_iterator(directory)) {
+		for (const auto& entry : fs::recursive_directory_iterator(directory)) {
+			if (files.size() > MAX_FILE_VEC_SIZE) {
+				break;
+			}
 			string path = entry.path().c_str();
+			if (!fs::is_regular_file(path))
+				continue;
 			files.push_back(path);
 			_addToOpenableOptions(path, dirsAndVectors, extensionsAndVectors);
 		}
@@ -592,8 +616,10 @@ namespace Utils {
 		vector<ExtensionsAndVector> extensionsAndVectors
 	) {
 		for (auto& dirAndVec : dirsAndVectors) {
-			if (boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
-					FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)) {
+			if (
+				boost::algorithm::istarts_with(fullPath, dirAndVec.dir) &&
+				FileHelper::isInsideDirectory(fullPath, dirAndVec.dir)
+			) {
 				dirAndVec.vec->push_back(fullPath);
 				return;
 			}
@@ -615,19 +641,14 @@ namespace Utils {
 		if (regex_search(dir, match, pattern)) {
 			resultingFiles = FileHelper::filterFiles(files, dir);
 		} else {
-			resultingFiles = FileHelper::filterFiles(files, workingDirectory + "\\" + dir);
+			resultingFiles = FileHelper::filterFiles(files, workingDirectory + "/" + dir);
 		}
 		return resultingFiles;
 	}
 
-	string FileUtil::_getFullPath(string dir, regex pattern) {
-		smatch match;
-		if (regex_search(dir, match, pattern))
-			return StringHelper::toLowercase(dir);
-		return StringHelper::toLowercase(workingDirectory + "\\" + dir);
+	string FileUtil::_getFullPath(string dir) {
+		return dir.starts_with("/") ? dir : _configDir + "/" + dir;
 	}
-
-	string FileUtil::_getDesktopEnvironment() { return getenv("XDG_CURRENT_DESKTOP"); }
 
 	tuple<string, int> FileUtil::_getRandomFile(std::vector<std::string> files, bool isDefaultFiles) {
 		int randomNumber = IndexHelper::getRandomIndex(files);
@@ -642,14 +663,19 @@ namespace Utils {
 	}
 
 	bool FileUtil::_runWallpaperCommand(const string& command) {
-		int result = system((command + " &").c_str());
+		const string& realUser = _sudoUserUtil->getRealUser();
+		int result = system(("sudo -u" + realUser + " sh -c '" + command + "'").c_str());
 		return (result != -1);
 	}
 
-	void FileUtil::openFile(string file) { system(("xdg-open \"" + file + "\" &").c_str()); }
+	void FileUtil::openFile(string file) {
+		const string& realUser = _sudoUserUtil->getRealUser();
+		system(("sudo -u" + realUser + " xdg-open \"" + file + "\" &").c_str());
+	}
 
 	void FileUtil::openFile(string file, string parameters) {
-		system(("xdg-open " + file + " " + parameters + " &").c_str());
+		const string& realUser = _sudoUserUtil->getRealUser();
+		system(("sudo -u" + realUser + " xdg-open " + file + " " + parameters + " &").c_str());
 	}
 
 	void FileUtil::setSoundPack(string pack) { _activeSoundPack = pack; }
@@ -660,7 +686,6 @@ namespace Utils {
 			? wallpaperFiles
 					[randomNumber == wallpaperFiles.size() - 1 ? randomNumber - 1 : randomNumber + 1]
 			: wallpaperFiles[randomNumber];
-		string desktopEnvironment = _getDesktopEnvironment();
 		bool gotDE = false;
 		stringstream commandStream;
 		vector<string> gsettingsDEs = {
@@ -677,7 +702,7 @@ namespace Utils {
 		vector<string> xfceDE = {"xfce"};
 
 		for (auto& DE : gsettingsDEs) {
-			if (!boost::icontains(desktopEnvironment, DE)) {
+			if (!boost::icontains(_desktopEnvironment, DE)) {
 				continue;
 			}
 			gotDE = true;
@@ -687,13 +712,13 @@ namespace Utils {
 		if (gotDE) {
 			bool result = _runWallpaperCommand(commandStream.str());
 			if (!result) {
-				throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetWallpaper, wallpaperPath);
 			}
 			return wallpaperPath;
 		}
 
 		for (auto& DE : qdbusDEs) {
-			if (!boost::icontains(desktopEnvironment, DE)) {
+			if (!boost::icontains(_desktopEnvironment, DE)) {
 				continue;
 			}
 			gotDE = true;
@@ -707,12 +732,12 @@ namespace Utils {
 		if (gotDE) {
 			bool result = _runWallpaperCommand(commandStream.str());
 			if (!result) {
-				throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetWallpaper, wallpaperPath);
 			}
 			return wallpaperPath;
 		}
 
-		if (boost::icontains(desktopEnvironment, "xfce")) {
+		if (boost::icontains(_desktopEnvironment, "xfce")) {
 			commandStream
 				<< "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor1/workspace0/last-image -s "
 				<< wallpaperPath;
@@ -720,7 +745,7 @@ namespace Utils {
 
 		bool result = _runWallpaperCommand(commandStream.str());
 		if (!result) {
-			throw InteractBoxException(ErrorCodes::CannotSetWallpaper, wallpaperPath);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetWallpaper, wallpaperPath);
 		}
 		return wallpaperPath;
 	}
@@ -754,10 +779,10 @@ namespace Utils {
 	string FileUtil::openRandomFile(optional<string> type, int retries) {
 		string typeName = type.value_or("default");
 		if (!_mapOfOpenableOptions.count(typeName))
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen, typeName == "default");
 		string randomFile = get<0>(randomFileAndNumber);
 		int randomNumber = get<1>(randomFileAndNumber);
@@ -778,10 +803,10 @@ namespace Utils {
 	string FileUtil::selectRandomFile(optional<string> type, int retries) {
 		string typeName = type.value_or("default");
 		if (!_mapOfOpenableOptions.count(typeName))
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, type.value_or("default"));
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, type.value_or("default"));
 		vector<string> filesToOpen = *_mapOfOpenableOptions[typeName];
 		if (filesToOpen.size() == 0)
-			throw InteractBoxException(ErrorCodes::NoSuchFiles, typeName);
+			throw InteractBoxException(ErrorCodes::ErrorCode::NoSuchFiles, typeName);
 		tuple<string, int> randomFileAndNumber = _getRandomFile(filesToOpen);
 		string randomFile = get<0>(randomFileAndNumber);
 		return randomFile;
@@ -795,7 +820,7 @@ namespace Utils {
 			string newFileName = randomFile.substr(0, pos);
 			bool renameSuccess = FileHelper::renameFile(randomFile, newFileName);
 			if (!renameSuccess) {
-				throw InteractBoxException(ErrorCodes::CannotRenameFile, randomFile);
+				throw InteractBoxException(ErrorCodes::ErrorCode::CannotRenameFile, randomFile);
 			};
 			malwareFiles[randomNumber] = newFileName;
 			return newFileName;

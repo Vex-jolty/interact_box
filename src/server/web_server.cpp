@@ -55,6 +55,8 @@ namespace Server {
 				status = HttpStatus::Forbidden;
 			} else if (boost::icontains(e.what(), "unsupported feature")) {
 				status = HttpStatus::NotImplemented;
+			} else if (boost::icontains(e.what(), "not found")) {
+				status = HttpStatus::NotFound;
 			} else {
 				status = HttpStatus::InternalServerError;
 			}
@@ -83,7 +85,7 @@ namespace Server {
 
 	void WebServer::start() {
 		if (!_socket->init()) {
-			throw InteractBoxException(ErrorCodes::WinSockStartupFailed);
+			throw InteractBoxException(ErrorCodes::ErrorCode::WinSockStartupFailed);
 		}
 
 		if (!_socket->bindAndListen(
@@ -95,7 +97,7 @@ namespace Server {
 					_port
 				)) {
 			_socket->shutdown();
-			throw InteractBoxException(ErrorCodes::CannotBindToSocket);
+			throw InteractBoxException(ErrorCodes::ErrorCode::CannotBindToSocket);
 		}
 
 		_loggingUtil->info("Server listening on port " + std::to_string(_port));
