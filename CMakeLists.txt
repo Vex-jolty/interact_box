@@ -57,7 +57,7 @@ if(WIN32)
 
 	string(TOLOWER "${OS_FLAVOR}" flavor_lower)
 	string(TOUPPER "${OS_FLAVOR}" flavor_upper)
-	set(INSTALLER_ICON "..\\..\\icon\\win${flavor_lower}.ico") # Handled Vista special case fix below
+	set(INSTALLER_ICON "..\\..\\icon\\win${flavor_lower}.ico")
 	if(OS_FLAVOR STREQUAL "Vista" OR OS_FLAVOR STREQUAL "Win10")
 		set(INSTALLER_ICON "..\\..\\icon\\${flavor_lower}.ico")
 		set(INCLUDE_X64 "!include \"x64.nsh\"\n")
@@ -330,6 +330,7 @@ else()
 endif()
 
 if(WIN32 AND OS_FLAVOR STREQUAL "98")
+	set(DEFAULT_MUSIC_EXTENSIONS "[\".midi\", \".mid\"]")
 else()
 	set(DEFAULT_MUSIC_EXTENSIONS "[\".midi\", \".mid\", \".mp3\", \".wav\"]")
 endif()
