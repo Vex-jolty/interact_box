@@ -228,7 +228,7 @@ Function CreateScheduledTaskOnFinish
 				!ifdef IS_WIN10_BUILD
             ExecWait '"$WINDIR\sysnative\schtasks.exe" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /RU INTERACTIVE /f'
             ExecShell "runas" "$INSTDIR\interact_box.exe" "" SW_SHOWNORMAL
-        !elifdef IS_VISTA_BUILD
+        !else ifdef IS_VISTA_BUILD
             ExecWait '"schtasks" /create /tn "Interact Box" /tr "\"$INSTDIR\interact_box.exe\"" /sc onlogon /RL HIGHEST /f'
             ExecShell "runas" "$INSTDIR\interact_box.exe" "" SW_SHOWNORMAL
         !else
