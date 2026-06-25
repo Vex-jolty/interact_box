@@ -10,11 +10,22 @@ namespace Server::Routes {
 		for (auto& key : keys) {
 			Json::Value jsonValue = jsonData[StringHelper::wideStringToString(key)];
 			wstring value = StringHelper::stringToWideString(jsonValue.asString());
+		#if WINVER >= _WIN32_WINNT_WIN10
+			wstring subKey = L"";
+			if (key == L"SystemStart") {
+				subKey = L"AppEvents\\Schemes\\Apps\\.Default\\WindowsLogon\\.Current";
+			} else {
+				subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
+			}
+		#else
 			wstring subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
+		#endif
 			wstring file = packDir + L"\\" + value;
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, file);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value);
+				throw InteractBoxException(
+					ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value
+				);
 		}
 	}
 
@@ -23,10 +34,21 @@ namespace Server::Routes {
 			wstring defaultValKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key;
 			wstring value =
 				Utils::RegistryUtil::getKeyValue(HKEY_CURRENT_USER, defaultValKey, L"\\.Default");
+		#if WINVER >= _WIN32_WINNT_WIN10
+			wstring subKey = L"";
+			if (key == L"SystemStart") {
+				subKey = L"AppEvents\\Schemes\\Apps\\.Default\\WindowsLogon\\.Current";
+			} else {
+				subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
+			}
+		#else
 			wstring subKey = L"AppEvents\\Schemes\\Apps\\.Default\\" + key + L"\\.Current";
+		#endif
 			bool success = Utils::RegistryUtil::setNewKeyValue(HKEY_CURRENT_USER, subKey, nullopt, value);
 			if (!success)
-				throw InteractBoxException(ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value);
+				throw InteractBoxException(
+					ErrorCodes::ErrorCode::CannotSetAudioFile, key + L" as " + value
+				);
 		}
 	}
 
@@ -247,7 +269,10 @@ namespace Server::Routes {
 	#endif
 	}
 
-	const string getCurrentWallpaper(shared_ptr<Utils::SudoUserUtil> sudoUserUtil, bool isDark = false) {
+	const string getCurrentWallpaper(
+		shared_ptr<Utils::SudoUserUtil> sudoUserUtil,
+		bool isDark = false
+	) {
 		string command = getWallpaperCommand(isDark);
 		const string& realUser = sudoUserUtil->getRealUser();
 		if (!realUser.empty()) {
@@ -255,7 +280,7 @@ namespace Server::Routes {
 		}
 		const string outputPath = "/tmp/wallpaper_output.txt";
 		command += " > " + outputPath;
-		
+
 		ifstream in(outputPath);
 		string result;
 		getline(in, result);
@@ -268,7 +293,10 @@ namespace Server::Routes {
 		return result;
 	}
 
-	void processWallpaperCommand(shared_ptr<Utils::FileUtil> fileUtil, shared_ptr<Utils::SudoUserUtil> sudoUserUtil) {
+	void processWallpaperCommand(
+		shared_ptr<Utils::FileUtil> fileUtil,
+		shared_ptr<Utils::SudoUserUtil> sudoUserUtil
+	) {
 		if (fileUtil->wallpaperFiles.size() == 0)
 			throw InteractBoxException(ErrorCodes::ErrorCode::WallpapersNotFound);
 		const string currentWallpaper = getCurrentWallpaper(sudoUserUtil);

@@ -185,21 +185,7 @@ endif()
 
 link_base_libs(${PROJECT_NAME} ${TARGET_WINDOWS_VERSION} TRUE)
 
-string(REPLACE
-	"." "," VERSION_STRING ${CMAKE_PROJECT_VERSION}
-)
-
-set(OUT_RC
-	${CMAKE_CURRENT_BINARY_DIR}/src/interact_box_version.rc
-)
-
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/src/version.rc.in
-	${OUT_RC}
-	@ONLY
-)
-
-target_sources(${PROJECT_NAME} PRIVATE ${OUT_RC})
+add_version_resource(${PROJECT_NAME})
 
 target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<CONFIG:Debug>:-g -gdwarf-4 -O0 -fno-omit-frame-pointer>
@@ -272,6 +258,12 @@ if(OS_FLAVOR STREQUAL "98" OR OS_FLAVOR STREQUAL "XP")
 	set(CONFIG_OUT_PATH "\$WINDIR")
 else()
 	set(CONFIG_OUT_PATH "\$APPDATA\\Interact Box")
+endif()
+
+if(WIN32 AND NOT DEFINED COPYRIGHT)
+	string(TIMESTAMP CURRENT_YEAR "%Y")
+	set(COMPANY_NAME "Vex the Jolteon")
+	set(COPYRIGHT "© ${COMPANY_NAME} 2024-${CURRENT_YEAR}")
 endif()
 
 configure_file(
