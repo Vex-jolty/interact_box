@@ -91,9 +91,12 @@ LONG CALLBACK vectoredExceptionHandler(PEXCEPTION_POINTERS exceptionPointers) {
 		(miniDumpFile.has_value() ? L"A minidump file has been created (" + miniDumpFile.value() + L")"
 															: L"An attempt to create a minidump file failed") +
 		L"\n";
-	message += L"This message should never be shown. Something seriously wrong occured. Please "
-						 L"provide the dump file to the developer, with a description of what you were doing "
+	message += L"This message should never be shown. Something seriously wrong occurred. Please "
+						 L"inform the developer of this incident, with a description of what you were doing "
 						 L"and what route was called, along with any relevant details.\n";
+	if (miniDumpFile.has_value()) {
+		message += L"If you're able, please provide the dump file with your report.\n";
+	}
 	message += L"Interact Box will now attempt to recover from this error.";
 	MessageBox(NULL, message.c_str(), L"INTERACT BOX UNHANDLED ERROR", MB_ICONERROR);
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -185,85 +188,6 @@ LoggingLevel setLoggingLevel(int argc, char* argv[]) {
 	return LoggingLevel::DEBUG;
 }
 
-	#if WINVER >= _WIN32_WINNT_VISTA
-bool isAnyAntivirusPresent() {
-	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	if (FAILED(hr))
-		return true;
-
-	hr = CoInitializeSecurity(
-		nullptr, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr,
-		EOAC_NONE, nullptr
-	);
-
-	if (FAILED(hr) && hr != RPC_E_TOO_LATE) {
-		CoUninitialize();
-		return true;
-	}
-
-	IWbemLocator* pLoc = nullptr;
-	hr = CoCreateInstance(
-		CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc
-	);
-
-	if (FAILED(hr)) {
-		CoUninitialize();
-		return true;
-	}
-
-	IWbemServices* pSvc = nullptr;
-	hr = pLoc->ConnectServer(
-		_bstr_t(L"ROOT\\SecurityCenter2"), nullptr, nullptr, nullptr, 0, nullptr, nullptr, &pSvc
-	);
-
-	pLoc->Release();
-
-	if (FAILED(hr)) {
-		CoUninitialize();
-		return true;
-	}
-
-	hr = CoSetProxyBlanket(
-		pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr, RPC_C_AUTHN_LEVEL_CALL,
-		RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE
-	);
-
-	if (FAILED(hr)) {
-		pSvc->Release();
-		CoUninitialize();
-		return true;
-	}
-
-	IEnumWbemClassObject* pEnumerator = nullptr;
-	hr = pSvc->ExecQuery(
-		_bstr_t(L"WQL"), _bstr_t(L"SELECT * FROM AntiVirusProduct"),
-		WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr, &pEnumerator
-	);
-
-	pSvc->Release();
-
-	if (FAILED(hr)) {
-		CoUninitialize();
-		return true;
-	}
-
-	IWbemClassObject* pObj = nullptr;
-	ULONG returned = 0;
-
-	hr = pEnumerator->Next(WBEM_INFINITE, 1, &pObj, &returned);
-
-	bool found = (returned > 0);
-
-	if (pObj)
-		pObj->Release();
-
-	pEnumerator->Release();
-	CoUninitialize();
-
-	return found;
-}
-	#endif
-
 int main(int argc, char* argv[]) {
 	#if WINVER > _WIN32_WINNT_NT4
 	PVOID handler = AddVectoredExceptionHandler(1, vectoredExceptionHandler);
@@ -296,7 +220,15 @@ int main(int argc, char* argv[]) {
 	vector<string> musicExtensions = configUtil.getMusicExtensions();
 	#endif
 
+	// Start tray thread
+	HINSTANCE hInstance = GetModuleHandle(NULL);
+	pthread_t thread;
+	Threads::ThreadData threadData{hInstance, nullptr, nullptr};
+	// loggingUtil.debug("Starting tray thread");
+
 	// Start utilities
+	pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void*)&threadData);
+	pthread_detach(thread);
 	#if WINVER > _WIN32_WINNT_NT4
 	Utils::FileUtil fileUtil(wallDir, malwareDir, openableExtensions, musicExtensions);
 	wstring logFileName = fileUtil.workingDirectory + L"\\" +
@@ -332,56 +264,23 @@ int main(int argc, char* argv[]) {
 	loggingUtil.debug("Malware directory is " + malwareDir);
 	#endif
 
-	/*#if WINVER >= _WIN32_WINNT_VISTA
-	if (isAnyAntivirusPresent()) {
-
-		try {
-			DWORD avWarningVal = Utils::RegistryUtil::getKeyValueDWORD(
-				HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown"
-			);
-			if (!(bool)avWarningVal) {
-				Utils::MessageBoxUtil::createBox(
-					L"Warning",
-					L"Antivirus software can prevent Interact Box from properly working. Please ensure "
-					L"you've "
-					L"added an exception in your AV's settings to allow all executables in Interact Box's "
-					L"installation folder to run without any checks.",
-					L"w", L"ok"
-				);
-				Utils::RegistryUtil::setNewKeyValue(
-					HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown", 1
-				);
-			}
-		} catch (InteractBoxException& e) {
-			Utils::MessageBoxUtil::createBox(
-				L"Warning",
-				L"Antivirus software can prevent Interact Box from properly working. Please ensure you've "
-				L"added an exception in your AV's settings to allow all executables in Interact Box's "
-				L"installation folder to run without any checks.",
-				L"w", L"ok"
-			);
-			Utils::RegistryUtil::setNewKeyValue(
-				HKEY_CURRENT_USER, L"Software\\InteractBox", L"warningShown", 1
-			);
-		}
-	}
-	#endif*/
 	// Starting server
 	Server::WebServer webServer =
 		WebServer(host, port, sharedFileUtil, sharedLoggingUtil, move(errorHandlerPtr));
 	Server::Routes::RouteHandler routeHandler(
 		configUtil, sharedFileUtil, sharedLoggingUtil, msgBoxProcessName, &themeMutex
 	);
+	threadData.server = &webServer;
 
 	webServer.addRoutes(routeHandler.getRoutes());
 	try {
-		HINSTANCE hInstance = GetModuleHandle(NULL);
-		pthread_t thread;
-
-		Threads::ThreadData threadData{hInstance, &webServer, nullptr};
-		loggingUtil.debug("Starting tray thread");
-		pthread_create(&thread, NULL, Threads::TrayThread::trayIconThread, (void*)&threadData);
-		pthread_detach(thread);
+		if (threadData.hwndPtr && *(threadData.hwndPtr)) {
+	#if WINVER > _WIN32_WINNT_NT4
+			Threads::TrayThread::notify(*(threadData.hwndPtr), L"Interact Box is now online!");
+	#else
+			Utils::MessageBoxUtil::createBox("Interact Box", "Interact Box is now online", "i", "ok");
+	#endif
+		}
 		loggingUtil.debug("Starting server");
 		webServer.start();
 		loggingUtil.debug("Successfully exited");
@@ -445,7 +344,8 @@ int main(int argc, char* argv[]) {
 	try {
 		cout << "Starting..." << "\n";
 		Utils::SudoUserUtil sudoUserUtil;
-		shared_ptr<Utils::SudoUserUtil> sharedSudoUserUtil = make_shared<Utils::SudoUserUtil>(sudoUserUtil);
+		shared_ptr<Utils::SudoUserUtil> sharedSudoUserUtil =
+			make_shared<Utils::SudoUserUtil>(sudoUserUtil);
 		const string configDir = "/etc/interact-box";
 		Utils::ConfigUtil configUtil(configDir + "/interact_box_config.json");
 		cout << "Got configs" << "\n";
@@ -457,7 +357,10 @@ int main(int argc, char* argv[]) {
 		vector<string> musicExtensions = configUtil.getMusicExtensions();
 
 		cout << "Starting file util" << "\n";
-		Utils::FileUtil fileUtil(currentDesktop.c_str(), configDir, wallDir, malwareDir, openableExtensions, musicExtensions, sharedSudoUserUtil);
+		Utils::FileUtil fileUtil(
+			currentDesktop.c_str(), configDir, wallDir, malwareDir, openableExtensions, musicExtensions,
+			sharedSudoUserUtil
+		);
 		string logFileName =
 			configDir + Utils::TimeUtil::getAndFormatCurrentTime("%Y%m%d-%H%M") + "-logfile.log";
 		string msgBoxProcessName = fileUtil.workingDirectory + "/interact-box-message-box";
@@ -465,7 +368,7 @@ int main(int argc, char* argv[]) {
 		cout << "Started file util and logging util" << "\n";
 		shared_ptr<Utils::LoggingUtil> sharedLoggingUtil = make_shared<Utils::LoggingUtil>(loggingUtil);
 		shared_ptr<Utils::FileUtil> sharedFileUtil = make_shared<Utils::FileUtil>(fileUtil);
-		
+
 		Errors::ErrorHandler errorHandler(sharedLoggingUtil, msgBoxProcessName);
 		unique_ptr<Errors::ErrorHandler> errorHandlerPtr =
 			make_unique<Errors::ErrorHandler>(errorHandler);

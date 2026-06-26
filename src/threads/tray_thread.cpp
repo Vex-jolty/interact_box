@@ -43,7 +43,11 @@ namespace Threads {
 					case WM_MENUCOMMAND:
 					case WM_COMMAND:
 						if (LOWORD(wParam) == exitId) {
-							server->serverAbort();
+							if (server) {
+								server->serverAbort();
+							} else {
+								ExitProcess(0);
+							}
 							DestroyWindow(hwnd);
 						} else if (LOWORD(wParam) == settingsId) {
 							openSettings();
@@ -53,7 +57,11 @@ namespace Threads {
 				return 0;
 			case WM_COMMAND:
 				if (LOWORD(wParam) == exitId) {
-					server->serverAbort();
+					if (server) {
+						server->serverAbort();
+					} else {
+						ExitProcess(0);
+					}
 					DestroyWindow(hwnd);
 				} else if (LOWORD(wParam) == settingsId) {
 					openSettings();
@@ -168,14 +176,19 @@ namespace Threads {
 		threadData->hwndPtr = &hwnd;
 		addTrayIcon(hwnd);
 	#if WINVER > _WIN32_WINNT_NT4
-		notify(hwnd, L"Interact Box is now online!");
+		notify(hwnd, L"Interact Box is loading, please wait...");
 	#else
-		Utils::MessageBoxUtil::createBox("Interact Box", "Interact Box is now online", "i", "ok");
+		Utils::MessageBoxUtil::createBox(
+			"Interact Box", "Interact Box is loading, please wait...", "i", "ok"
+		);
 	#endif
 		MSG msg = {};
 		while (GetMessage(&msg, NULL, 0, 0)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+			if (threadData->server == nullptr) {
+				continue;
+			}
 			if (threadData->server->abortNow.load()) {
 				DestroyWindow(hwnd);
 				break;
