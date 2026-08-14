@@ -402,12 +402,8 @@ namespace Server::Routes {
 			"/macro",
 			"GET",
 			[](Http::HttpRequest* req, Http::HttpResponse* res) {
-#ifdef __linux__
-				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
-#else
 				Utils::ResolutionUtil::changeResolution(true);
 				res->setResponse(nullopt, "Changed resolution", HttpStatus::OK);
-#endif
 			},
 			_configUtil.getUseMacroResolution()
 		),
@@ -415,12 +411,8 @@ namespace Server::Routes {
 			"/micro",
 			"GET",
 			[](Http::HttpRequest* req, Http::HttpResponse* res) {
-#ifdef __linux__
-				throw InteractBoxException(ErrorCodes::ErrorCode::UnsupportedFeature);
-#else
 				Utils::ResolutionUtil::changeResolution(false);
 				res->setResponse(nullopt, "Changed resolution", HttpStatus::OK);
-#endif
 			},
 			_configUtil.getUseMicroResolution()
 		),
