@@ -350,6 +350,7 @@ if (LINUX)
 	file(COPY ${CMAKE_SOURCE_DIR}/src/${PROJECT_NAME}.desktop DESTINATION ${CMAKE_BINARY_DIR})
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/interact_box_settings/interact_box_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
 	file(COPY ${CMAKE_SOURCE_DIR}/interact_box_extras/src/malware_date_settings/malware_date_settings.desktop DESTINATION ${CMAKE_BINARY_DIR})
+	file(COPY ${CMAKE_SOURCE_DIR}/installer/interact-box.service DESTINATION ${CMAKE_BINARY_DIR})
 endif()
 
 if(WIN32)
@@ -394,7 +395,7 @@ else()
 	add_custom_command(TARGET ${PROJECT_NAME}
 		POST_BUILD
 		COMMAND tar
-		ARGS -C ${CMAKE_BINARY_DIR} --exclude=*CMake* --exclude=*cmake* -czf ${PROJECT_NAME}.tar.gz ${PROJECT_NAME} install.sh interact_box_extras/src/**/* icon/* *.desktop installer/interact_box_config.json installer/malware_with_date_specific_deployment.json
+		ARGS -C ${CMAKE_BINARY_DIR} --exclude=*CMake* --exclude=*cmake* -czf ${PROJECT_NAME}.tar.gz ${PROJECT_NAME} install.sh interact-box.service interact_box_extras/src/**/* icon/* *.desktop installer/interact_box_config.json installer/malware_with_date_specific_deployment.json
 		COMMENT "Generating tarball"
 	)
 endif()

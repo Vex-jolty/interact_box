@@ -45,4 +45,6 @@ install -Dm644 ./installer/malware_with_date_specific_deployment.json /etc/inter
 
 install -Dm644 ./interact_box_extras/src/trivia_game/audio/skill_check.wav /etc/interact-box/skill_check.wav
 
+install -Dm644 ./interact-box.service /etc/systemd/system/interact-box.service
+
 echo "Done."

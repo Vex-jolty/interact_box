@@ -1,0 +1,10 @@
+[Unit]
+Description=Interact Box
+
+[Service]
+Type=simple
+User=root
+ExecStart=interact-box
+
+[Install]
+WantedBy=multi-user.target
